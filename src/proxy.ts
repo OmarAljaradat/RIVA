@@ -16,7 +16,7 @@ const ADMIN_API_PATHS = [
   '/api/upload',
 ];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isAdminPage = ADMIN_PATHS.some(p => pathname.startsWith(p));

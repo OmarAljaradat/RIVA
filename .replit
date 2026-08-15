@@ -1,0 +1,22 @@
+modules = ["nodejs-20"]
+hidden = [".next", "node_modules"]
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+deploymentTarget = "cloudrun"
+build = ["sh", "-c", "npm run build"]
+run = ["sh", "-c", "npm start"]
+
+[workflows]
+runButton = "Start"
+
+[[workflows.workflow]]
+name = "Start"
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run build && npx prisma migrate deploy && npm start"
+waitForPort = 3000

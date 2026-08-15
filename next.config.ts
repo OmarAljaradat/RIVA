@@ -9,10 +9,11 @@ const nextConfig: NextConfig = {
     //   - unpkg.com → خط ثمانية (Thmanyah Font)
     //   - الصور والفيديو محلية من /uploads/
     //   - Telegram API لا يُستدعى من المتصفح (فقط من السيرفر)
+    // ملاحظة: unsafe-eval مطلوب لـ Next.js (Turbopack) في dev والإنتاج
     const csp = [
       "default-src 'self'",
-      // السكربتات: Next.js يحتاج unsafe-inline للـ hydration
-      "script-src 'self' 'unsafe-inline'",
+      // Next.js يحتاج unsafe-inline + unsafe-eval للـ hydration وبعض polyfills
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       // الأنماط: خطوط جوجل + ثمانية + inline styles لـ Next.js
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
       // الخطوط
@@ -29,8 +30,6 @@ const nextConfig: NextConfig = {
       "object-src 'none'",
       // منع base tag injection
       "base-uri 'self'",
-      // ترقية HTTP إلى HTTPS تلقائياً في الإنتاج
-      "upgrade-insecure-requests",
     ].join('; ');
 
     return [
