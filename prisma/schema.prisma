@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Dress {
+  id          Int            @id @default(autoincrement())
+  name        String
+  nickname    String?
+  description String?
+  price         Float
+  originalPrice Float?
+  sortOrder     Int            @default(0)
+  isNew         Boolean        @default(true)
+  isFeatured  Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  variants    DressVariant[]
+  orderItems  OrderItem[]
+}
+
+model DressVariant {
+  id         Int          @id @default(autoincrement())
+  dressId    Int
+  color      String
+  colorHex   String       @default("#000000")
+  size       String
+  quantity   Int          @default(0)
+  dress      Dress        @relation(fields: [dressId], references: [id], onDelete: Cascade)
+  images     DressImage[]
+  orderItems OrderItem[]
+}
+
+model DressImage {
+  id        Int          @id @default(autoincrement())
+  url       String
+  variantId Int
+  variant   DressVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id           Int         @id @default(autoincrement())
+  customerName String
+  phone        String
+  address      String
+  city         String
+  notes        String?
+  status       String      @default("pending")
+  total        Float
+  createdAt    DateTime    @default(now())
+  items        OrderItem[]
+}
+
+model OrderItem {
+  id        Int          @id @default(autoincrement())
+  orderId   Int
+  dressId   Int
+  variantId Int
+  quantity  Int
+  price     Float
+  order     Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  dress     Dress        @relation(fields: [dressId], references: [id])
+  variant   DressVariant @relation(fields: [variantId], references: [id])
+}

@@ -1,1 +1,1120 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Outfit:wght@400;500;600;700&display=swap');
+@import url('https://unpkg.com/@dawod/thmanyah-font-web/index.css');
+
+.font-thmanyah {
+  font-family: 'Thmanyah Sans', 'Thmanyah Serif Display', 'Cairo', sans-serif !important;
+}
+
+:root {
+  /* Color Palette - Instagram Luxe Theme */
+  --color-dark: #0f0f13;
+  --color-dark-surface: #181820;
+  --color-dark-card: #21212c;
+  --color-burgundy: #6b1426;
+  --color-burgundy-hover: #520e1c;
+  --color-rose-gold: #c99359;
+  --color-rose-gold-light: #e5c5a1;
+  --color-gold: #d4af37;
+  --color-cream: #faf6f0;
+  --color-cream-dark: #f3ede4;
+  --color-white: #ffffff;
+  --color-gray-100: #f7f7f9;
+  --color-gray-200: #eef0f4;
+  --color-gray-300: #d0d5dd;
+  --color-gray-400: #98a2b3;
+  --color-gray-500: #667085;
+  --color-gray-800: #1d2939;
+  --color-success: #12b76a;
+  --color-warning: #f79009;
+  --color-error: #f04438;
+  
+  /* Instagram Gradient */
+  --insta-gradient: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  --gold-gradient: linear-gradient(135deg, #d4af37 0%, #edd581 50%, #c99359 100%);
+  --dark-gradient: linear-gradient(180deg, #181820 0%, #0f0f13 100%);
+  
+  /* Fonts - Thmanyah Font System */
+  --font-arabic: 'Thmanyah Sans', 'Cairo', system-ui, -apple-system, sans-serif;
+  --font-display: 'Thmanyah Serif Display', 'Playfair Display', Georgia, serif;
+  --font-sans: 'Thmanyah Sans', 'Outfit', 'Cairo', sans-serif;
+
+  /* Shadows */
+  --shadow-xs: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.15);
+  --shadow-glow: 0 0 25px rgba(201, 147, 89, 0.35);
+
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  font-family: var(--font-arabic);
+  background-color: var(--color-cream);
+  color: var(--color-dark);
+  direction: rtl;
+  text-align: right;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+.container {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 var(--space-4, 16px);
+}
+
+/* ==========================================================================
+   INSTAGRAM TOP BAR & BADGE
+   ========================================================================== */
+.insta-top-banner {
+  background: var(--color-dark);
+  color: var(--color-white);
+  font-size: 13px;
+  padding: 8px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.insta-handle-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  font-size: 12px;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.insta-handle-badge:hover {
+  background: var(--insta-gradient);
+}
+
+/* ==========================================================================
+   NAVBAR (HEADER)
+   ========================================================================== */
+.navbar-luxe {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(250, 246, 240, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(201, 147, 89, 0.15);
+  transition: all 0.3s ease;
+}
+
+.navbar-inner-luxe {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 72px;
+  position: relative;
+}
+
+.brand-logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.brand-logo-text {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--color-burgundy);
+  line-height: 1;
+}
+
+.brand-tagline {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--color-rose-gold);
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+.nav-links-desktop {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.nav-link-item {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-dark);
+  position: relative;
+  padding: 6px 0;
+  transition: color 0.2s;
+}
+
+.nav-link-item:hover, .nav-link-item.active {
+  color: var(--color-burgundy);
+}
+
+.nav-link-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 0;
+  height: 2px;
+  background: var(--gold-gradient);
+  transition: width 0.3s ease;
+}
+
+.nav-link-item:hover::after, .nav-link-item.active::after {
+  width: 100%;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-insta-order {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #25d366;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-insta-order:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4);
+}
+
+/* ==========================================================================
+   INSTAGRAM STORIES CAROUSEL
+   ========================================================================== */
+.stories-section {
+  padding: 20px 0 10px;
+  background: var(--color-cream);
+}
+
+.stories-carousel {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 6px 4px 12px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.stories-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.story-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.story-ring {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  padding: 3px;
+  background: var(--insta-gradient);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease;
+}
+
+.story-ring.seen {
+  background: var(--color-gray-300);
+}
+
+.story-item:hover .story-ring {
+  transform: scale(1.06);
+}
+
+.story-img-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3px solid var(--color-cream);
+  object-fit: cover;
+  background-color: var(--color-dark-surface);
+}
+
+.story-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-dark);
+  text-align: center;
+  max-width: 80px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   HERO BANNER - HIGH FASHION LOOK
+   ========================================================================== */
+.hero-luxe {
+  position: relative;
+  min-height: 520px;
+  background: var(--color-dark);
+  border-radius: var(--radius-xl);
+  margin: 10px 0 32px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+}
+
+.hero-luxe-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  opacity: 0.55;
+  filter: brightness(0.9);
+}
+
+.hero-luxe-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(15,15,19,0.92) 0%, rgba(15,15,19,0.4) 60%, rgba(15,15,19,0.1) 100%);
+}
+
+.hero-luxe-content {
+  position: relative;
+  z-index: 2;
+  max-width: 580px;
+  padding: 60px 48px;
+}
+
+.hero-badge-insta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(201, 147, 89, 0.2);
+  border: 1px solid rgba(201, 147, 89, 0.5);
+  color: var(--color-rose-gold-light);
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  backdrop-filter: blur(8px);
+}
+
+.hero-title-luxe {
+  font-family: var(--font-arabic);
+  font-size: 46px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 16px;
+  color: #fff;
+}
+
+.hero-title-luxe span {
+  background: var(--gold-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle-luxe {
+  font-size: 16px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 28px;
+}
+
+.hero-cta-group {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   BUTTONS SYSTEM
+   ========================================================================== */
+.btn-luxe {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: var(--radius-full);
+  font-size: 15px;
+  font-weight: 700;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  text-align: center;
+}
+
+.btn-luxe-primary {
+  background: var(--color-burgundy);
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(107, 20, 38, 0.35);
+}
+
+.btn-luxe-primary:hover {
+  background: var(--color-burgundy-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(107, 20, 38, 0.45);
+}
+
+.btn-luxe-gold {
+  background: var(--gold-gradient);
+  color: var(--color-dark);
+  font-weight: 800;
+  box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
+}
+
+.btn-luxe-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(212, 175, 55, 0.45);
+}
+
+.btn-luxe-outline-light {
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+}
+
+.btn-luxe-outline-light:hover {
+  background: #fff;
+  color: var(--color-dark);
+  border-color: #fff;
+}
+
+.btn-luxe-whatsapp {
+  background: #25d366;
+  color: #fff;
+  font-weight: 700;
+}
+
+.btn-luxe-whatsapp:hover {
+  background: #1eb857;
+}
+
+/* ==========================================================================
+   PRODUCT CARDS (INSTAGRAM PORTRAIT ASPECT RATIO 4:5)
+   ========================================================================== */
+.section-header-center {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-tag {
+  color: var(--color-rose-gold);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.section-heading-main {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--color-dark);
+}
+
+.products-grid-insta {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .products-grid-insta {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .products-grid-insta {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+.product-card-insta {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border: 1px solid rgba(201, 147, 89, 0.12);
+}
+
+.product-card-insta:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-rose-gold);
+}
+
+.product-media-container {
+  position: relative;
+  width: 100%;
+  padding-top: 125%; /* 4:5 Aspect Ratio for Instagram Look */
+  background: var(--color-gray-100);
+  overflow: hidden;
+}
+
+.product-media-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  transition: transform 0.6s ease;
+}
+
+.product-card-insta:hover .product-media-img {
+  transform: scale(1.06);
+}
+
+.badge-tag {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 5;
+  background: var(--color-burgundy);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+}
+
+.badge-tag.gold {
+  background: var(--gold-gradient);
+  color: var(--color-dark);
+}
+
+.quick-view-trigger {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  opacity: 0;
+  background: rgba(15, 15, 19, 0.88);
+  color: #fff;
+  backdrop-filter: blur(6px);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.product-card-insta:hover .quick-view-trigger {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+.product-body-insta {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.product-name-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-dark);
+  line-height: 1.4;
+  height: 44px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-color-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.color-dot-pill {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.15);
+}
+
+.product-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 8px;
+}
+
+.product-price-val {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--color-burgundy);
+}
+
+.product-price-val span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-gray-500);
+}
+
+.btn-quick-buy {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-cream-dark);
+  color: var(--color-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.product-card-insta:hover .btn-quick-buy {
+  background: var(--color-burgundy);
+  color: #fff;
+}
+
+/* ==========================================================================
+   INSTAGRAM FEED SHOWCASE SECTION
+   ========================================================================== */
+.insta-feed-section {
+  background: var(--color-dark);
+  color: #fff;
+  padding: 60px 0;
+  border-radius: var(--radius-xl);
+  margin: 48px 0;
+}
+
+.insta-feed-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .insta-feed-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.insta-feed-item {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.insta-feed-item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.insta-feed-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(107, 20, 38, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: #fff;
+  font-size: 24px;
+}
+
+.insta-feed-item:hover img {
+  transform: scale(1.1);
+}
+
+.insta-feed-item:hover .insta-feed-overlay {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   MOBILE BOTTOM BAR (APP STYLE)
+   ========================================================================== */
+.mobile-bottom-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--color-gray-200);
+  z-index: 1000;
+  justify-content: space-around;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .mobile-bottom-bar {
+    display: flex;
+  }
+  body {
+    padding-bottom: 70px;
+  }
+}
+
+.mobile-bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-gray-500);
+}
+
+.mobile-bar-item.active {
+  color: var(--color-burgundy);
+}
+
+.mobile-bar-icon {
+  font-size: 20px;
+}
+
+/* ==========================================================================
+   MODAL / STORY VIEWER
+   ========================================================================== */
+.modal-overlay-insta {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-content-luxe {
+  background: #fff;
+  border-radius: var(--radius-xl);
+  max-width: 840px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  z-index: 10;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   LUXURY ADMIN PANEL DESIGN SYSTEM
+   ========================================================================== */
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+  background: #F4F1EA;
+  font-family: 'Cairo', sans-serif;
+  color: #1F2937;
+}
+
+.admin-sidebar {
+  width: 270px;
+  background: linear-gradient(180deg, #1C0A10 0%, #2D0F1A 100%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 20px;
+  border-left: 1px solid rgba(212, 175, 55, 0.2);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.admin-sidebar-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 36px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #D4AF37 0%, #FFF5D1 50%, #AA7C11 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+  margin-bottom: 40px;
+  letter-spacing: 2px;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 700;
+  font-size: 15px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  margin-bottom: 6px;
+}
+
+.admin-nav-item:hover {
+  color: #fff;
+  background: rgba(212, 175, 55, 0.12);
+  transform: translateX(-4px);
+}
+
+.admin-nav-item.active {
+  color: #fff;
+  background: linear-gradient(135deg, #722F37 0%, #4A0E17 100%);
+  box-shadow: 0 4px 16px rgba(114, 47, 55, 0.4);
+  border-right: 4px solid #D4AF37;
+}
+
+.admin-main {
+  flex: 1;
+  padding: 40px 48px;
+  overflow-y: auto;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  background: #fff;
+  padding: 24px 32px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.admin-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 24px;
+  margin-bottom: 36px;
+}
+
+.stat-card-luxe {
+  background: #fff;
+  padding: 28px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card-luxe:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(114, 47, 55, 0.12);
+}
+
+.stat-card-luxe::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 6px;
+  height: 100%;
+  background: linear-gradient(180deg, #722F37 0%, #D4AF37 100%);
+}
+
+.stat-card-label {
+  font-size: 13px;
+  color: #6B7280;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.stat-card-value {
+  font-size: 32px;
+  font-weight: 900;
+  color: #722F37;
+}
+
+.admin-table-wrapper {
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: right;
+}
+
+.admin-table th {
+  background: #FAF7F2;
+  padding: 18px 24px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #4B5563;
+  border-bottom: 1px solid #E5E7EB;
+  text-transform: uppercase;
+}
+
+.admin-table td {
+  padding: 20px 24px;
+  border-bottom: 1px solid #F3F4F6;
+  font-size: 14px;
+  color: #1F2937;
+  vertical-align: middle;
+}
+
+.admin-table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.admin-table tbody tr:hover {
+  background: #FDFBF7;
+}
+
+.btn-luxe-admin {
+  background: linear-gradient(135deg, #722F37 0%, #4A0E17 100%);
+  color: #fff;
+  font-weight: 800;
+  padding: 12px 24px;
+  border-radius: 14px;
+  border: none;
+  box-shadow: 0 4px 14px rgba(114, 47, 55, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btn-luxe-admin:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(114, 47, 55, 0.4);
+  background: linear-gradient(135deg, #8B3A44 0%, #5E121D 100%);
+}
+
+.btn-luxe-outline {
+  background: transparent;
+  color: #722F37;
+  border: 2px solid #722F37;
+  font-weight: 800;
+  padding: 10px 20px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.btn-luxe-outline:hover {
+  background: #722F37;
+  color: #fff;
+}
+
+/* Simple Clean Product Card Hover */
+.simple-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Mobile Responsive Fixes - 100% Mobile Optimized */
+@media (max-width: 768px) {
+  h1 {
+    font-size: 26px !important;
+    line-height: 1.4 !important;
+  }
+  
+  h2 {
+    font-size: 22px !important;
+    line-height: 1.4 !important;
+  }
+
+  p {
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+  }
+
+  .container {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  .section-heading-main {
+    font-size: 22px !important;
+    line-height: 1.4 !important;
+  }
+
+  /* Mobile Bottom Navigation Spacing to prevent content overlap */
+  body {
+    padding-bottom: 74px !important;
+  }
+
+  /* Mobile Navbar Layout Fix - Hide navbar row on mobile */
+  .navbar-luxe {
+    display: none !important;
+  }
+
+  .nav-links-desktop {
+    display: none !important;
+  }
+
+  .products-grid-insta {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+
+
+/* -- Product Detail Page � Responsive Grid -- */
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  background: #fff;
+  padding: 32px;
+  border-radius: 24px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.04);
+}
+
+/* On mobile: stack image on top, info below */
+@media (max-width: 768px) {
+  .product-detail-grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 20px;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+}
+
+/* Order CTA: sticky on mobile bottom */
+@media (max-width: 768px) {
+  .product-order-cta {
+    position: fixed;
+    bottom: 70px; /* above mobile bottom bar */
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.96);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(114,47,55,0.15);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+  }
+
+  .product-order-cta button {
+    border-radius: 14px !important;
+    font-size: 15px !important;
+  }
+}
+
+/* Checkout 2-col row on desktop, 1-col on mobile */
+.checkout-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+@media (max-width: 600px) {
+  .checkout-row-2 {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
