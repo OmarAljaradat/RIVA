@@ -118,6 +118,49 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </Link>
             );
           })}
+
+          {/* Quick Telegram Sync Button */}
+          <button
+            onClick={async () => {
+              const btn = document.getElementById('sidebar-sync-btn');
+              if (btn) btn.innerText = '⏳ جاري المزامنة...';
+              try {
+                const res = await fetch('/api/admin/sync-sizes', { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                  alert(`✅ تم تحديث ومطابقة المقاسات مع تيليجرام بنجاح!\n• إجمالي الفساتين المفحوصة: ${data.totalScannedDresses}\n• فساتين تم تعديل مقاساتها: ${data.updatedDressesCount}`);
+                  window.location.reload();
+                } else {
+                  alert(`⚠️ تنبيه: ${data.error || 'فشلت المزامنة'}`);
+                }
+              } catch (e: any) {
+                alert(`❌ خطأ: ${e.message}`);
+              } finally {
+                if (btn) btn.innerText = '🔄 مزامنة المقاسات فوراً';
+              }
+            }}
+            id="sidebar-sync-btn"
+            style={{
+              marginTop: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '14px 16px',
+              borderRadius: '14px',
+              fontSize: '13px',
+              fontWeight: 800,
+              background: '#ECFDF5',
+              border: '1.5px solid #059669',
+              color: '#047857',
+              cursor: 'pointer',
+              boxShadow: '0 2px 10px rgba(5,150,105,0.15)',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <span>🔄</span>
+            <span>مزامنة المقاسات فوراً</span>
+          </button>
         </nav>
 
         {/* Live Site Preview Link & Logout */}
