@@ -11,164 +11,167 @@ export interface AiParsedDress {
   }[];
 }
 
-const COLOR_HEX_MAP: Record<string, string> = {
-  'اسود': '#000000',
-  'أسود': '#000000',
-  'ابيض': '#FFFFFF',
-  'أبيض': '#FFFFFF',
-  'خمري': '#722F37',
-  'احمر': '#DC2626',
-  'أحمر': '#DC2626',
-  'عنابي': '#800020',
-  'كحلي': '#1E3A5F',
-  'زيتي': '#556B2F',
-  'اخضر': '#16A34A',
-  'زهري': '#F472B6',
-  'اصفر': '#EAB308',
-  'أصفر': '#EAB308',
-  'بيبي بلو': '#89CFF0',
-  'سماوي': '#87CEEB',
-  'بني': '#8B4513',
-  'بني فاتح': '#D2B48C',
-  'بني موكا': '#6F4E37',
-  'سومو': '#F9A8D4',
-  'سومو غامق': '#D97706',
-  'اوف وايت': '#F5F5DC',
-  'نهدي': '#A855F7',
-  'بيج': '#D4B896',
-};
+// ── قاموس شامل لجميع ألوان فساتين التيليجرام والأردن ──────────────────────────────
+export const COLOR_DICTIONARY: { name: string; hex: string; aliases: string[]; emoji?: string }[] = [
+  { name: 'اسود', hex: '#000000', aliases: ['اسود', 'أسود', 'سواد', 'بلاك', 'black'], emoji: '🖤' },
+  { name: 'ابيض', hex: '#FFFFFF', aliases: ['ابيض', 'أبيض', 'وايت', 'white', 'ناصع'], emoji: '🤍' },
+  { name: 'اوف وايت', hex: '#F5F5DC', aliases: ['اوف وايت', 'أوف وايت', 'اوفوايت', 'سكري', 'كريمي', 'off white', 'offwhite'] },
+  { name: 'خمري', hex: '#722F37', aliases: ['خمري', 'خمرى', 'ماروني', 'نبيذي', 'بورغندي', 'burgundy'], emoji: '❤️' },
+  { name: 'احمر', hex: '#DC2626', aliases: ['احمر', 'أحمر', 'ريد', 'red'] },
+  { name: 'عنابي', hex: '#800020', aliases: ['عنابي', 'دم الغزال'] },
+  { name: 'كحلي', hex: '#1E3A5F', aliases: ['كحلي', 'كحلى', 'نيلي', 'كحلي غامق', 'رويال بلو', 'navy', 'كحلي ملوكي'], emoji: '💙' },
+  { name: 'بيبي بلو', hex: '#89CFF0', aliases: ['بيبي بلو', 'بيبيبلو', 'بيبي بلوو', 'سماوي', 'ازرق فاتح', 'baby blue', 'babyblue'], emoji: '🩵' },
+  { name: 'زهري', hex: '#F472B6', aliases: ['زهري', 'زهرى', 'وردي', 'بينك', 'pink', 'فوشيا فاتح'], emoji: '🩷' },
+  { name: 'فوشي', hex: '#DB2777', aliases: ['فوشي', 'فوشيا', 'ماجنتي', 'فوشيه'] },
+  { name: 'سومو', hex: '#F9A8D4', aliases: ['سومو', 'سومو غامق', 'سمكي', 'سلمون', 'salmon'] },
+  { name: 'اصفر', hex: '#EAB308', aliases: ['اصفر', 'أصفر', 'اصفر كموني', 'ليموني', 'خردلي', 'كموني', 'كركمي', 'يلو', 'yellow', 'مسترد'], emoji: '💛' },
+  { name: 'بني', hex: '#8B4513', aliases: ['بني', 'بنى', 'بني شوكولاته', 'شوكولاته', 'brown'], emoji: '🤎' },
+  { name: 'بني فاتح', hex: '#D2B48C', aliases: ['بني فاتح', 'ترابي', 'كراميل', 'عسلي', 'هافان', 'جملي', 'camel'] },
+  { name: 'بني موكا', hex: '#6F4E37', aliases: ['بني موكا', 'موكا', 'كافيه', 'نسكافيه', 'mocha'] },
+  { name: 'بيج', hex: '#D4B896', aliases: ['بيج', 'بيج فاتح', 'بيج غامق', 'بيچ', 'beige'] },
+  { name: 'نهدي', hex: '#A855F7', aliases: ['نهدي', 'نهدى', 'بنفسجي', 'موف', 'ليلكي', 'لافندر', 'purple', 'ارغواني'], emoji: '💜' },
+  { name: 'زيتي', hex: '#556B2F', aliases: ['زيتي', 'زيتى', 'زيتوني', 'جيشي', 'كاكي', 'olive', 'زيتي غامق'], emoji: '💚' },
+  { name: 'اخضر', hex: '#16A34A', aliases: ['اخضر', 'أخضر', 'زمردي', 'عشبي', 'جرين', 'green'] },
+  { name: 'فستقي', hex: '#86EFAC', aliases: ['فستقي', 'مينت', 'نعناعي', 'تفاحي', 'mint'] },
+  { name: 'رمادي', hex: '#9CA3AF', aliases: ['رمادي', 'رمادى', 'سكني', 'سكنى', 'رصاصي', 'سلفر', 'فضي', 'grey', 'gray'] },
+  { name: 'برتقالي', hex: '#F97316', aliases: ['برتقالي', 'برتقالى', 'اورنج', 'أورنج', 'مشمشي', 'طوبي', 'orange'], emoji: '🧡' },
+  { name: 'ذهبي', hex: '#D4AF37', aliases: ['ذهبي', 'ذهبى', 'شامبين', 'شامبانيا', 'gold'] },
+];
 
-export async function parseDressWithAi(rawText: string): Promise<AiParsedDress | null> {
-  try {
-    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
-
-    if (apiKey) {
-      // Direct REST call to Gemini 2.5 Flash API for high accuracy
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `أنت خبير تحليل بيانات متاجر الفساتين في الأردن.
-قم بتحليل النص التالي المستخرج من منشور قناة تيليجرام واستخرج بيانات الفستان بدقة 100% ككائن JSON فقط بدون أي كلام إضافي:
-
-القواعد المطلوبة:
-1. "description": قماش ووصف الفستان المكتوب للنص.
-2. "costPrice": السعر المكتوب بالمنشور (مثال 25 من "25 jd" أو "٢٥ دينار").
-3. "sellingPrice": إذا كان costPrice أقل من 26 أضف 9، أما إذا كان 26 أو أكثر أضف 8.
-4. "variants": مصفوفة تحتوي كل الألوان والمقاسات:
-   - "color": اسم اللون بالعربية الفصحى النظيفة (مثل "خمري", "أسود", "أبيض", "كحلي", "زهري", "أصفر", "بيبي بلو").
-   - "colorHex": كود الهاكس المناسب للون (مثل "#722F37" للخمري، "#000000" للأسود).
-   - "size": رقم المقاس (مثل "36", "38", "40", "42", "44", "46", "48"). إذا كان اللون مكتوباً بالمنشور بدون أرقام مقاسات إطلاقاً، فاجعل size يساوي "خالص (نفذت الكمية)".
-   - "quantity": اجعل الكمية 0 إذا كان المقاس "خالص (نفذت الكمية)"، واجعلها 5 إذا كان مقاساً متوفراً.
-
-نص المنشور:
-"""
-${rawText}
-"""
-
-أرجع JSON بنسق:
-{
-  "name": "...",
-  "description": "...",
-  "costPrice": 0,
-  "sellingPrice": 0,
-  "variants": [
-    { "color": "...", "colorHex": "...", "size": "...", "quantity": 5 }
-  ]
-}`
-            }]
-          }],
-          generationConfig: {
-            responseMimeType: 'application/json'
-          }
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const jsonText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (jsonText) {
-          const parsed = JSON.parse(jsonText);
-          return {
-            name: parsed.description || parsed.name || 'فستان جديد',
-            description: parsed.description || rawText,
-            costPrice: parsed.costPrice || 25,
-            sellingPrice: parsed.sellingPrice || (parsed.costPrice < 26 ? parsed.costPrice + 9 : parsed.costPrice + 8),
-            variants: parsed.variants || []
-          };
-        }
-      }
-    }
-  } catch (e) {
-    console.error('Gemini API call error, falling back to smart rule parser:', e);
-  }
-
-  // Smart Deterministic Parser Fallback (Rule-Based Expert Parser)
-  return fallbackSmartParse(rawText);
+// ── دالة تنظيف وتوحيد الأرقام العربية والإنجليزية ──────────────────────────────
+export function normalizeArabicNumbers(str: string): string {
+  const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  return str.replace(/[٠-٩]/g, d => String(arabicDigits.indexOf(d)));
 }
 
-function fallbackSmartParse(text: string): AiParsedDress | null {
-  if (!text || typeof text !== 'string') return null;
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+// ── دالة استخراج المقاسات بدقة عالية من أي نص ─────────────────────────────────
+export function extractSizesFromLine(line: string): string[] {
+  const normalized = normalizeArabicNumbers(line)
+    .replace(/[,\-_/\\|•]/g, ' ')
+    .replace(/\s+/g, ' ');
+
+  const sizes: string[] = [];
+
+  // 1. فحص المقاسات الموحدة
+  if (/فري\s*سايز|مقاس\s*موحد|free\s*size|one\s*size/i.test(normalized)) {
+    return ['Free Size'];
+  }
+
+  // 2. المقاسات الرقمية (34, 36, 38, 40, 42, 44, 46, 48, 50, 52, 54)
+  const numMatches = normalized.match(/\b(34|36|38|40|42|44|46|48|50|52|54)\b/g);
+  if (numMatches) {
+    numMatches.forEach(m => {
+      if (!sizes.includes(m)) sizes.push(m);
+    });
+  }
+
+  // 3. المقاسات الحرفية (XS, S, M, L, XL, XXL, 2XL, 3XL, 4XL, 5XL)
+  const letterMatches = normalized.match(/\b(XS|S|M|L|XL|XXL|2XL|3XL|4XL|5XL|XXXL)\b/gi);
+  if (letterMatches) {
+    letterMatches.forEach(m => {
+      const upper = m.toUpperCase();
+      if (!sizes.includes(upper)) sizes.push(upper);
+    });
+  }
+
+  return sizes;
+}
+
+// ── دالة التعرف على اللون الذكية بالكلمات والإيموجي ──────────────────────────────
+export function identifyColor(line: string): { color: string; colorHex: string } | null {
+  const cleanLine = line.toLowerCase();
+
+  // 1. فحص بالأسماء والـ Aliases
+  for (const entry of COLOR_DICTIONARY) {
+    for (const alias of entry.aliases) {
+      const regex = new RegExp(`(^|[\\s،,:;\\-_])${alias}([\\s،,:;\\-_]|$)`, 'i');
+      if (regex.test(cleanLine) || cleanLine.startsWith(alias) || cleanLine.includes(alias)) {
+        return { color: entry.name, colorHex: entry.hex };
+      }
+    }
+  }
+
+  // 2. فحص بالإيموجي إذا لم تُذكر الكلمة صراحة
+  for (const entry of COLOR_DICTIONARY) {
+    if (entry.emoji && cleanLine.includes(entry.emoji)) {
+      return { color: entry.name, colorHex: entry.hex };
+    }
+  }
+
+  return null;
+}
+
+// ── المحلل الذكي الفائق والشامل للمنشورات ─────────────────────────────────────
+export function parseDressExpert(rawText: string): AiParsedDress | null {
+  if (!rawText || typeof rawText !== 'string') return null;
+
+  const normalizedText = normalizeArabicNumbers(rawText);
+  const lines = normalizedText.split('\n').map(l => l.trim()).filter(Boolean);
   if (lines.length === 0) return null;
 
+  // 1. استخراج السعر
   let costPrice = 25;
   for (const line of lines) {
-    const numMatch = line.match(/(?:السعر|price|jd|دينار)?\s*:?\s*(\d+(?:\.\d+)?)/i) || line.match(/(\d{2})\s*(?:jd|دينار)/i);
-    if (numMatch) {
-      const p = parseFloat(numMatch[1]);
-      if (p >= 10 && p <= 100) {
+    const priceMatch = line.match(/(?:السعر|price|jd|دينار|د\.أ)?\s*:?\s*(\d+(?:\.\d+)?)/i) || 
+                       line.match(/(\d{2})\s*(?:jd|دينار)/i);
+    if (priceMatch) {
+      const p = parseFloat(priceMatch[1]);
+      if (p >= 10 && p <= 120) {
         costPrice = p;
         break;
       }
     }
   }
 
+  // قاعدة التسعير في الأردن: إذا أقل من 26 أضف 9، وإذا 26 فأكثر أضف 8
   const margin = costPrice < 26 ? 9 : 8;
   const sellingPrice = costPrice + margin;
 
+  // 2. استخراج الاسم والوصف
   let description = '';
   for (const line of lines) {
-    if (line.includes('الوصف') || line.includes('قماش') || line.includes('طقم') || line.includes('فستان') || line.includes('شيفون') || line.includes('كريب') || line.includes('ستان')) {
+    if (
+      line.includes('الوصف') || line.includes('قماش') || line.includes('فستان') || 
+      line.includes('طقم') || line.includes('شيفون') || line.includes('كريب') || 
+      line.includes('ستان') || line.includes('اورجنزرا') || line.includes('باربي')
+    ) {
       description = line.replace(/^الوصف\s*:\s*/, '').trim();
       break;
     }
   }
   if (!description && lines[0]) description = lines[0];
 
+  // 3. استخراج الألوان والمقاسات
   const variants: AiParsedDress['variants'] = [];
 
   for (const line of lines) {
-    if (line.includes('السعر') || line.includes('اسم الفستان') || line.includes('اللوان') || line.includes('الالوان')) continue;
-
-    let matchedColor = '';
-    let matchedHex = '#722F37';
-
-    for (const [key, hex] of Object.entries(COLOR_HEX_MAP)) {
-      if (line.includes(key)) {
-        matchedColor = key;
-        matchedHex = hex;
-        break;
-      }
+    // تجاهل أسطر السعر أو العناوين العامة
+    if (
+      line.startsWith('السعر') || line.includes('price') || 
+      line.startsWith('المقاسات') || line.startsWith('الالوان') || line.startsWith('اللوان')
+    ) {
+      continue;
     }
 
-    if (matchedColor) {
-      const sizeMatches = line.match(/\b(34|36|38|40|42|44|46|48|50)\b/g);
-      if (sizeMatches && sizeMatches.length > 0) {
-        for (const s of sizeMatches) {
+    const identified = identifyColor(line);
+    if (identified) {
+      const sizes = extractSizesFromLine(line);
+      const isExplicitlySoldOut = line.includes('خالص') || line.includes('نفذت') || line.includes('نفذ');
+
+      if (sizes.length > 0 && !isExplicitlySoldOut) {
+        for (const s of sizes) {
           variants.push({
-            color: matchedColor,
-            colorHex: matchedHex,
+            color: identified.color,
+            colorHex: identified.colorHex,
             size: s,
             quantity: 5
           });
         }
       } else {
+        // اللون نفذ أو غير متوفر
         variants.push({
-          color: matchedColor,
-          colorHex: matchedHex,
+          color: identified.color,
+          colorHex: identified.colorHex,
           size: 'خالص (نفذت الكمية)',
           quantity: 0
         });
@@ -183,4 +186,9 @@ function fallbackSmartParse(text: string): AiParsedDress | null {
     sellingPrice,
     variants
   };
+}
+
+// ── المحلل الرئيسي (يستخدم خبير القواعد الفوري والمحسّن) ──────────────────────
+export async function parseDressWithAi(rawText: string): Promise<AiParsedDress | null> {
+  return parseDressExpert(rawText);
 }
