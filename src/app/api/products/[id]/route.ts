@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // ─── Helper: التحقق من session الإدمن ─────────────────────────────────────
 function isAdminAuthenticated(request: NextRequest): boolean {
   const sessionToken = request.cookies.get('riva_admin_session')?.value;
