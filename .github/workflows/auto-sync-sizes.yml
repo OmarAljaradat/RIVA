@@ -1,0 +1,19 @@
+name: 🔄 Auto Sync Sizes from Telegram
+
+on:
+  schedule:
+    # Runs every 20 minutes, 24/7 automatically
+    - cron: '*/20 * * * *'
+  workflow_dispatch: # Allows running manually anytime with one click from GitHub Actions tab
+
+jobs:
+  sync:
+    name: Sync Dress Sizes & Stock with Telegram Channel
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Live Sync Endpoint
+        run: |
+          echo "🚀 Sending sync request to Riva Live Store..."
+          response=$(curl -s -X GET "https://riva-lime.vercel.app/api/admin/sync-sizes" -H "User-Agent: GitHubActions-AutoSync")
+          echo "📊 Response from Server:"
+          echo "$response"
