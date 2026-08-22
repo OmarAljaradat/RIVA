@@ -77,59 +77,82 @@ async function performTelegramSync() {
 
     let dressHasChanges = false;
 
-    // Update quantities for each variant
-    for (const pv of matchedParsed.variants) {
-      const existing = dbDress.variants.find(
-        ev => ev.color.trim() === pv.color.trim() && ev.size.trim() === pv.size.trim()
-      );
+    // Filter valid parsed variants with real sizes
+    const validVariants = matchedParsed.variants.filter(
+      pv => pv.size && !pv.size.includes('خالص') && !pv.size.includes('نفذ') && pv.quantity > 0
+    );
 
-      if (existing) {
-        if (existing.quantity !== pv.quantity) {
-          await prisma.dressVariant.update({
-            where: { id: existing.id },
-            data: { quantity: pv.quantity }
-          });
-          dressHasChanges = true;
+    // Group parsed valid variants by color
+    const parsedColors = Array.from(new Set(matchedParsed.variants.map(v => v.color.trim())));
+
+    for (const color of parsedColors) {
+      const colorValidVariants = validVariants.filter(v => v.color.trim() === color);
+
+      if (colorValidVariants.length === 0) {
+        // Color has NO available sizes in Telegram -> mark all existing DB sizes for this color as 0
+        for (const ev of dbDress.variants) {
+          if (ev.color.trim() === color && ev.quantity > 0) {
+            await prisma.dressVariant.update({
+              where: { id: ev.id },
+              data: { quantity: 0 }
+            });
+            dressHasChanges = true;
+          }
         }
       } else {
-        // Create new variant if not in DB
-        const createdV = await prisma.dressVariant.create({
-          data: {
-            dressId: dbDress.id,
-            color: pv.color,
-            colorHex: pv.colorHex || '#000000',
-            size: pv.size,
-            quantity: pv.quantity,
-          }
-        });
+        // Color has valid available sizes in Telegram!
+        const availableSizes = colorValidVariants.map(v => v.size.trim());
 
-        // Link existing color image if available
-        const sameColor = dbDress.variants.find(ev => ev.color === pv.color && ev.images.length > 0);
-        if (sameColor && sameColor.images[0]) {
-          await prisma.dressImage.create({
-            data: {
-              url: sameColor.images[0].url,
-              variantId: createdV.id
+        for (const pv of colorValidVariants) {
+          const existing = dbDress.variants.find(
+            ev => ev.color.trim() === pv.color.trim() && ev.size.trim() === pv.size.trim()
+          );
+
+          if (existing) {
+            if (existing.quantity <= 0) {
+              await prisma.dressVariant.update({
+                where: { id: existing.id },
+                data: { quantity: 5 }
+              });
+              dressHasChanges = true;
             }
-          });
+          } else {
+            // Create new variant in DB
+            const createdV = await prisma.dressVariant.create({
+              data: {
+                dressId: dbDress.id,
+                color: pv.color.trim(),
+                colorHex: pv.colorHex || '#000000',
+                size: pv.size.trim(),
+                quantity: 5,
+              }
+            });
+
+            // Copy media from another variant of the same color if available
+            const sameColorVar = dbDress.variants.find(ev => ev.color.trim() === pv.color.trim() && ev.images.length > 0);
+            if (sameColorVar && sameColorVar.images.length > 0) {
+              for (const img of sameColorVar.images) {
+                await prisma.dressImage.create({
+                  data: {
+                    url: img.url,
+                    variantId: createdV.id
+                  }
+                });
+              }
+            }
+            dressHasChanges = true;
+          }
         }
-        dressHasChanges = true;
-      }
-    }
 
-    // Mark colors as sold out if channel post specifies "خالص"
-    const soldOutColors = matchedParsed.variants
-      .filter(v => v.quantity === 0 || v.size.includes('خالص'))
-      .map(v => v.color);
-
-    for (const sc of soldOutColors) {
-      for (const v of dbDress.variants) {
-        if (v.color === sc && v.quantity > 0) {
-          await prisma.dressVariant.update({
-            where: { id: v.id },
-            data: { quantity: 0 }
-          });
-          dressHasChanges = true;
+        // Any DB size for this color not present in Telegram is out of stock -> 0
+        for (const ev of dbDress.variants) {
+          if (ev.color.trim() === color && !availableSizes.includes(ev.size.trim()) && ev.quantity > 0) {
+            await prisma.dressVariant.update({
+              where: { id: ev.id },
+              data: { quantity: 0 }
+            });
+            dressHasChanges = true;
+          }
         }
       }
     }

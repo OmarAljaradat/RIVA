@@ -146,12 +146,14 @@ export default function ProductDetailPage() {
     v.images.forEach(img => {
       if (img.url && !group!.images.includes(img.url)) group!.images.push(img.url);
     });
-    group.sizes.push({ variantId: v.id, size: v.size, quantity: v.quantity });
+    if (!v.size.includes('خالص') && !v.size.includes('نفذ')) {
+      group.sizes.push({ variantId: v.id, size: v.size, quantity: v.quantity });
+    }
   });
 
   colorGroups.forEach(g => {
-    const totalQty = g.sizes.reduce((acc, curr) => acc + curr.quantity, 0);
-    g.isSoldOut = totalQty === 0 || g.sizes.some(s => s.size.includes('خالص') || s.size.includes('نفذت'));
+    const totalQty = g.sizes.reduce((acc, curr) => acc + (curr.quantity > 0 ? curr.quantity : 0), 0);
+    g.isSoldOut = g.sizes.length === 0 || totalQty === 0;
     const realMedia = g.images.filter((url: string) => url !== '/uploads/dress1.jpg');
     if (realMedia.length > 0) g.images = realMedia;
   });
@@ -160,7 +162,7 @@ export default function ProductDetailPage() {
   const activeMedia = selectedColor?.images[activeImageIndex] || '/uploads/dress1.jpg';
   const isVideo = activeMedia?.endsWith('.mp4') || activeMedia?.endsWith('.webm');
   const selectedSizeInfo = selectedColor?.sizes.find(s => s.variantId === selectedVariantId);
-  const colorIsSoldOut = selectedColor?.isSoldOut || (selectedSizeInfo && selectedSizeInfo.quantity === 0);
+  const colorIsSoldOut = selectedColor?.isSoldOut || (selectedSizeInfo && selectedSizeInfo.quantity <= 0);
 
   const handleDirectOrder = () => {
     if (colorIsSoldOut) return;
