@@ -62,6 +62,26 @@ export default function Dashboard() {
   const [orders,   setOrders]   = useState<Order[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [loading,  setLoading]  = useState(true);
+  const [syncingSizes, setSyncingSizes] = useState(false);
+
+  const handleSyncSizes = async () => {
+    if (syncingSizes) return;
+    setSyncingSizes(true);
+    try {
+      const res = await fetch('/api/admin/sync-sizes', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ تم فحص ومطابقة المقاسات مع تيليجرام بنجاح!\n• إجمالي الفساتين المفحوصة: ${data.totalScannedDresses}\n• فساتين تم تحديث مخزونها: ${data.updatedDressesCount}`);
+        window.location.reload();
+      } else {
+        alert(`⚠️ تنبيه: ${data.error || 'فشلت المزامنة'}`);
+      }
+    } catch (err: any) {
+      alert(`❌ خطأ في الاتصال: ${err.message}`);
+    } finally {
+      setSyncingSizes(false);
+    }
+  };
 
   useEffect(() => {
     Promise.all([
@@ -206,14 +226,37 @@ export default function Dashboard() {
             بيانات حية من قاعدة البيانات — تُحدَّث تلقائياً
           </p>
         </div>
-        <Link href="/admin/import-inspector" style={{
-          background: `linear-gradient(135deg, ${BURGUNDY}, #4A1C22)`, color: '#fff',
-          padding: '12px 22px', borderRadius: 16, fontWeight: 800, fontSize: 14,
-          textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8,
-          boxShadow: `0 4px 16px ${BURGUNDY}40`
-        }}>
-          🤖 المُعالج الذكي
-        </Link>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <button
+            onClick={handleSyncSizes}
+            disabled={syncingSizes}
+            style={{
+              background: syncingSizes ? '#9CA3AF' : '#059669',
+              color: '#fff',
+              border: 'none',
+              padding: '12px 20px',
+              borderRadius: 16,
+              fontWeight: 800,
+              fontSize: 14,
+              cursor: syncingSizes ? 'not-allowed' : 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              boxShadow: '0 4px 16px rgba(5,150,105,0.3)',
+              transition: 'all 0.2s'
+            }}
+          >
+            {syncingSizes ? '⏳ جاري المزامنة...' : '🔄 مزامنة المقاسات مع تيليجرام'}
+          </button>
+          <Link href="/admin/import-inspector" style={{
+            background: `linear-gradient(135deg, ${BURGUNDY}, #4A1C22)`, color: '#fff',
+            padding: '12px 22px', borderRadius: 16, fontWeight: 800, fontSize: 14,
+            textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8,
+            boxShadow: `0 4px 16px ${BURGUNDY}40`
+          }}>
+            🤖 المُعالج الذكي
+          </Link>
+        </div>
       </div>
 
       {/* ─── KPI Cards ─────────────────────────────────────────────── */}

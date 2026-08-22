@@ -94,6 +94,26 @@ export default function ProductsList() {
   const [aiText, setAiText] = useState('');
   const [parsingAi, setParsingAi] = useState(false);
   const [aiError, setAiError] = useState('');
+  const [syncingSizes, setSyncingSizes] = useState(false);
+
+  const handleSyncSizes = async () => {
+    if (syncingSizes) return;
+    setSyncingSizes(true);
+    try {
+      const res = await fetch('/api/admin/sync-sizes', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ تم فحص ومطابقة المقاسات مع تيليجرام بنجاح!\n• إجمالي الفساتين المفحوصة: ${data.totalScannedDresses}\n• فساتين تم تحديث مخزونها: ${data.updatedDressesCount}`);
+        fetchProducts();
+      } else {
+        alert(`⚠️ تنبيه: ${data.error || 'فشلت المزامنة'}`);
+      }
+    } catch (err: any) {
+      alert(`❌ خطأ في الاتصال: ${err.message}`);
+    } finally {
+      setSyncingSizes(false);
+    }
+  };
 
   const fetchProducts = () => {
     fetch('/api/products')
@@ -176,7 +196,29 @@ export default function ProductsList() {
             يمكنك إعادة ترتيب ظهور الفساتين بالكتالوج بالضغط على أزرار الترتيب (⬆️ للأعلى / 🥇 في البداية)
           </p>
         </div>
-        <div style={{ display: 'flex', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <button
+            onClick={handleSyncSizes}
+            disabled={syncingSizes}
+            style={{
+              background: syncingSizes ? '#9CA3AF' : '#059669',
+              color: '#fff',
+              border: 'none',
+              padding: '12px 20px',
+              borderRadius: '16px',
+              fontWeight: 800,
+              fontSize: '14px',
+              cursor: syncingSizes ? 'not-allowed' : 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              boxShadow: '0 4px 16px rgba(5,150,105,0.3)',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span>{syncingSizes ? '⏳' : '🔄'}</span>
+            <span>{syncingSizes ? 'جاري المزامنة...' : 'مزامنة المقاسات مع تيليجرام'}</span>
+          </button>
           <button 
             onClick={() => setShowAiModal(true)} 
             style={{
