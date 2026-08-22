@@ -159,7 +159,11 @@ export default function ProductDetailPage() {
   });
 
   const selectedColor = colorGroups[selectedColorIndex] || colorGroups[0];
-  const activeMedia = selectedColor?.images[activeImageIndex] || '/uploads/dress1.jpg';
+  let activeMedia = selectedColor?.images[activeImageIndex];
+  if (!activeMedia || activeMedia === '/uploads/dress1.jpg') {
+    const anyRealMedia = colorGroups.flatMap(g => g.images).find(img => img && img !== '/uploads/dress1.jpg');
+    activeMedia = anyRealMedia || '/uploads/dress_hero.jpg';
+  }
   const isVideo = activeMedia?.endsWith('.mp4') || activeMedia?.endsWith('.webm');
   const selectedSizeInfo = selectedColor?.sizes.find(s => s.variantId === selectedVariantId);
   const colorIsSoldOut = selectedColor?.isSoldOut || (selectedSizeInfo && selectedSizeInfo.quantity <= 0);

@@ -57,10 +57,22 @@ export default function ProductCardInsta({ product }: ProductCardProps) {
   }
 
   const [activeColorIdx, setActiveColorIdx] = useState(0);
-  const activeGroup = colorGroups[activeColorIdx] || null;
+  const activeGroup = colorGroups[activeColorIdx] || colorGroups[0] || null;
 
-  // Fallback media
-  const displayMedia = activeGroup?.photoUrl || '/uploads/dress1.jpg';
+  // Find best available media (active color photo -> any variant photo -> default)
+  let displayMedia = activeGroup?.photoUrl || '';
+  if (!displayMedia || displayMedia === '/uploads/dress1.jpg') {
+    const anyValidMedia = product.variants
+      ?.flatMap(v => v.images || [])
+      .map(img => img.url)
+      .find(url => url && url !== '/uploads/dress1.jpg');
+    if (anyValidMedia) {
+      displayMedia = anyValidMedia;
+    } else {
+      displayMedia = '/uploads/dress_hero.jpg';
+    }
+  }
+
   const isVideo = displayMedia.endsWith('.mp4') || displayMedia.endsWith('.webm');
 
   return (
