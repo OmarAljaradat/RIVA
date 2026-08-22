@@ -18,5 +18,5 @@ mode = "parallel"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run build && npx prisma migrate deploy && npm start"
+args = "npm run dev -- -p 3000 -H 0.0.0.0"
 waitForPort = 3000

@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
@@ -23,6 +21,15 @@
 # misc
 .DS_Store
 *.pem
+*.session
+*.db
+*.txt
+dev.db
+prisma/dev.db
+prisma/*.session
+prisma/phone_code_hash.txt
+prisma/user_code.txt
+prisma/user_password.txt
 
 # debug
 npm-debug.log*
@@ -30,8 +37,9 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
+!.env.example
 
 # vercel
 .vercel
