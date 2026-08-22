@@ -12,6 +12,36 @@ export const maxDuration = 60; // Max execution time for Vercel Hobby
 const apiId = 34081063;
 const apiHash = '018dc673429227e26a1b8d9d65eb76ca';
 
+function normalizeArabicText(str: string): string {
+  if (!str) return '';
+  return str
+    .replace(/[✨💫🌷🎗💕🍂⭐🍁👑🌸👗💎]/g, '')
+    .replace(/[أإآ]/g, 'ا')
+    .replace(/ة/g, 'ه')
+    .replace(/ى/g, 'ي')
+    .replace(/[،,.\-_/\\|]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function calculateMatchScore(dressName: string, postText: string): number {
+  const normDress = normalizeArabicText(dressName);
+  const normPost = normalizeArabicText(postText);
+
+  if (normPost.includes(normDress) || normDress.includes(normPost.slice(0, 20))) return 1.0;
+
+  const dressWords = normDress.split(' ').filter(w => w.length > 2);
+  if (dressWords.length === 0) return 0;
+
+  let matchedWords = 0;
+  for (const w of dressWords) {
+    if (normPost.includes(w)) matchedWords++;
+  }
+
+  return matchedWords / dressWords.length;
+}
+
 async function performTelegramSync() {
   // Get string session from environment variable or file
   let stringSession = process.env.TELEGRAM_USER_SESSION || '';
@@ -58,24 +88,24 @@ async function performTelegramSync() {
   const changesSummary: string[] = [];
 
   for (const dbDress of dbDresses) {
-    const dbCleanName = dbDress.name.toLowerCase().replace(/✨️|💫|🌷|🎗|💕|🍂/g, '').trim();
+    let bestMsgText: string | null = null;
+    let highestScore = 0;
 
-    // Match message from channel
-    let matchedParsed = null;
     for (const msg of messages) {
       const text = msg.message || '';
-      if (!text || text.length < 10) continue;
+      if (!text || text.length < 15) continue;
 
-      const cleanText = text.toLowerCase().replace(/✨️|💫|🌷|🎗|💕|🍂/g, '');
-      if (cleanText.includes(dbCleanName.slice(0, 12)) || dbCleanName.includes(cleanText.slice(0, 12))) {
-        matchedParsed = await parseDressWithAi(text);
-        if (matchedParsed && matchedParsed.variants.length > 0) break;
+      const score = calculateMatchScore(dbDress.name, text);
+      if (score > highestScore && score >= 0.4) {
+        highestScore = score;
+        bestMsgText = text;
       }
     }
 
-    if (!matchedParsed) continue;
+    if (!bestMsgText) continue;
 
-    let dressHasChanges = false;
+    const matchedParsed = parseDressExpert(bestMsgText);
+    if (!matchedParsed || matchedParsed.variants.length === 0) continue;
 
     // Filter valid parsed variants with real sizes
     const validVariants = matchedParsed.variants.filter(
