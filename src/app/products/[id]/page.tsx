@@ -223,7 +223,7 @@ export default function ProductDetailPage() {
             {selectedColor.images.length > 1 && (
               <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
                 {selectedColor.images.map((img, idx) => {
-                  const isThumbVideo = img.endsWith('.mp4') || img.endsWith('.webm');
+                  const isThumbVideo = img.includes('.mp4') || img.includes('.webm');
                   return (
                     <button key={idx} onClick={() => setActiveImageIndex(idx)} style={{
                       width: '64px', height: '84px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0,

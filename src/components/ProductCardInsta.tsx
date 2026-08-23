@@ -73,7 +73,7 @@ export default function ProductCardInsta({ product }: ProductCardProps) {
     }
   }
 
-  const isVideo = displayMedia.endsWith('.mp4') || displayMedia.endsWith('.webm');
+  const isVideo = displayMedia.includes('.mp4') || displayMedia.includes('.webm');
 
   return (
     <div style={{
