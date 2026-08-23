@@ -109,6 +109,7 @@ async function performTelegramSync() {
   const claimedMessageIds = new Set<number>(); // حجز المنشورات لمنع أي دمج نهائياً
 
   for (const dbDress of dbDresses) {
+    let dressHasChanges = false;
     let bestMsgId: number | null = null;
     let bestMsgText: string | null = null;
     let highestScore = 0;
@@ -132,7 +133,7 @@ async function performTelegramSync() {
     claimedMessageIds.add(bestMsgId); // حجز المنشور حصرياً لهذا الفستان
 
     // استخدام الذكاء الاصطناعي Gemini AI للتحليل فائق الدقة
-    let matchedParsed = await parseDressWithGemini(bestMsgText);
+    let matchedParsed: any = await parseDressWithGemini(bestMsgText);
     if (!matchedParsed || matchedParsed.variants.length === 0) {
       matchedParsed = parseDressExpert(bestMsgText);
     }
@@ -140,14 +141,14 @@ async function performTelegramSync() {
 
     // Filter valid parsed variants with real sizes
     const validVariants = matchedParsed.variants.filter(
-      pv => pv.size && !pv.size.includes('خالص') && !pv.size.includes('نفذ') && pv.quantity > 0
+      (pv: any) => pv.size && !pv.size.includes('خالص') && !pv.size.includes('نفذ') && pv.quantity > 0
     );
 
     // Group parsed valid variants by color
-    const parsedColors = Array.from(new Set(matchedParsed.variants.map(v => v.color.trim())));
+    const parsedColors = Array.from(new Set(matchedParsed.variants.map((v: any) => v.color.trim())));
 
     for (const color of parsedColors) {
-      const colorValidVariants = validVariants.filter(v => v.color.trim() === color);
+      const colorValidVariants = validVariants.filter((v: any) => v.color.trim() === color);
 
       if (colorValidVariants.length === 0) {
         // Color has NO available sizes in Telegram -> mark all existing DB sizes for this color as 0
@@ -162,7 +163,7 @@ async function performTelegramSync() {
         }
       } else {
         // Color has valid available sizes in Telegram!
-        const availableSizes = colorValidVariants.map(v => v.size.trim());
+        const availableSizes = colorValidVariants.map((v: any) => v.size.trim());
 
         for (const pv of colorValidVariants) {
           const existing = dbDress.variants.find(
@@ -220,7 +221,7 @@ async function performTelegramSync() {
 
     if (dressHasChanges) {
       updatedDressesCount++;
-      changesSummary.push(`تم تحديث مقاسات ومخزون: "${dbDress.nickname || dbDress.name}"`);
+      changesSummary.push(`تم تحديث مقاسات ومخزون: "${dbDress.name}"`);
     }
   }
 
