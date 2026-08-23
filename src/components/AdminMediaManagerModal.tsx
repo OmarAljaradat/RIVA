@@ -85,56 +85,51 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
     }));
   };
 
-  const uploadSingleFile = async (file: File): Promise<string | null> => {
-    const CHUNK_SIZE = 2.5 * 1024 * 1024; // 2.5MB per chunk (safely under Vercel's 4.5MB limit)
-    
-    if (file.size <= CHUNK_SIZE) {
-      // Small file -> Standard single request
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/upload', {
+  const uploadSingleFile = async (file: File, type: 'photo' | 'video'): Promise<string | null> => {
+    // 1. Direct Telegram Storage CDN Upload (Fastest, zero server limits, supports files up to 50MB directly)
+    try {
+      const BOT_TOKEN = '8647389861:AAG4JGyAQYu4FD6IcX1NVa3wV6HACaoQo0U';
+      const CHAT_ID = '1965859902';
+      const endpoint = type === 'video' ? 'sendVideo' : 'sendPhoto';
+
+      const tgFormData = new FormData();
+      tgFormData.append('chat_id', CHAT_ID);
+      tgFormData.append(type === 'video' ? 'video' : 'photo', file, file.name);
+
+      const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${endpoint}`, {
         method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.url) return data.url;
-      throw new Error(data.error || 'فشل رفع الملف');
-    }
-
-    // Large file (e.g. video) -> Upload in chunks
-    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-    const uploadId = 'up_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
-
-    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-      const start = chunkIndex * CHUNK_SIZE;
-      const end = Math.min(start + CHUNK_SIZE, file.size);
-      const chunkBlob = file.slice(start, end);
-
-      const formData = new FormData();
-      formData.append('chunk', chunkBlob, file.name);
-      formData.append('chunkIndex', chunkIndex.toString());
-      formData.append('totalChunks', totalChunks.toString());
-      formData.append('uploadId', uploadId);
-      formData.append('fileName', file.name);
-
-      setUploadProgress(Math.round(((chunkIndex + 1) / totalChunks) * 100));
-
-      const res = await fetch('/api/upload/chunk', {
-        method: 'POST',
-        body: formData,
+        body: tgFormData,
       });
 
-      const data = await res.json();
-      if (!res.ok || data.error) {
-        throw new Error(data.error || `فشل رفع الجزء ${chunkIndex + 1}/${totalChunks}`);
-      }
+      const tgData = await tgRes.json();
+      if (tgData.ok) {
+        const fileId = type === 'video'
+          ? (tgData.result?.video?.file_id || tgData.result?.document?.file_id)
+          : (tgData.result?.photo?.[tgData.result.photo.length - 1]?.file_id || tgData.result?.document?.file_id);
 
-      if (data.url) {
-        return data.url;
+        if (fileId) {
+          const fileRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${fileId}`);
+          const fileData = await fileRes.json();
+          if (fileData.ok && fileData.result?.file_path) {
+            return `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileData.result.file_path}`;
+          }
+        }
       }
+    } catch (tgErr) {
+      console.warn('Telegram direct upload failed, trying fallback...', tgErr);
     }
 
-    return null;
+    // 2. Fallback to /api/upload
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json();
+    if (data.url) return data.url;
+
+    throw new Error(data.error || 'فشل رفع الملف');
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'photo' | 'video') => {
@@ -142,11 +137,10 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
     if (!files || files.length === 0) return;
 
     setUploadingType(type);
-    setUploadProgress(0);
     try {
       const newUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
-        const url = await uploadSingleFile(files[i]);
+        const url = await uploadSingleFile(files[i], type);
         if (url) {
           newUrls.push(url);
         }
@@ -172,7 +166,6 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
       alert(`حدث خطأ أثناء رفع الملف: ${err?.message || 'يرجى المحاولة مرة أخرى'}`);
     } finally {
       setUploadingType(null);
-      setUploadProgress(null);
       e.target.value = '';
     }
   };
@@ -343,7 +336,7 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <label className="btn-luxe-admin" style={{ cursor: 'pointer', margin: 0, fontSize: '12px', padding: '7px 14px', background: '#722F37' }}>
-                {uploadingType === 'photo' ? (uploadProgress !== null ? `⏳ جاري رفع الصورة (${uploadProgress}%)...` : '⏳ جاري رفع الصورة...') : '🖼️ + رفع صورة من جهازك'}
+                {uploadingType === 'photo' ? '⏳ جاري رفع الصورة...' : '🖼️ + رفع صورة من جهازك'}
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
@@ -409,7 +402,7 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <label className="btn-luxe-admin" style={{ cursor: 'pointer', margin: 0, fontSize: '12px', padding: '7px 14px', background: '#1E293B' }}>
-                {uploadingType === 'video' ? (uploadProgress !== null ? `⏳ جاري رفع الفيديو (${uploadProgress}%)...` : '⏳ جاري رفع الفيديو...') : '🎥 + رفع مقطع فيديو (MP4)'}
+                {uploadingType === 'video' ? '⏳ جاري رفع الفيديو...' : '🎥 + رفع مقطع فيديو (MP4)'}
                 <input
                   type="file"
                   accept="video/mp4,video/webm,video/quicktime"
