@@ -1,8 +1,5 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -20,7 +17,7 @@ export default function Home() {
   const [quickViewId, setQuickViewId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch('/api/products')
+    fetch('/api/products?t=' + Date.now(), { cache: 'no-store' })
       .then(res => res.json())
       .then(data => setProducts(Array.isArray(data) ? data : []))
       .catch(console.error)
