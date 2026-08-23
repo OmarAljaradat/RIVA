@@ -12,6 +12,7 @@ interface MediaManagerProps {
 const DEFAULT_SIZES = ['36', '38', '40', '42', '44', '46', '48', '50'];
 
 function isVideoUrl(url: string) {
+  if (url.startsWith('data:video/')) return true;
   const clean = url.toLowerCase().split('?')[0];
   return clean.endsWith('.mp4') || clean.endsWith('.webm') || clean.endsWith('.mov') || clean.includes('video');
 }
@@ -67,7 +68,6 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
   });
 
   const [uploadingType, setUploadingType] = useState<'photo' | 'video' | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
   const currentMediaList = mediaMap[activeColor] || [];
@@ -85,51 +85,51 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
     }));
   };
 
-  const uploadSingleFile = async (file: File, type: 'photo' | 'video'): Promise<string | null> => {
-    // 1. Direct Telegram Storage CDN Upload (Fastest, zero server limits, supports files up to 50MB directly)
-    try {
-      const BOT_TOKEN = '8647389861:AAG4JGyAQYu4FD6IcX1NVa3wV6HACaoQo0U';
-      const CHAT_ID = '1965859902';
-      const endpoint = type === 'video' ? 'sendVideo' : 'sendPhoto';
-
-      const tgFormData = new FormData();
-      tgFormData.append('chat_id', CHAT_ID);
-      tgFormData.append(type === 'video' ? 'video' : 'photo', file, file.name);
-
-      const tgRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/${endpoint}`, {
-        method: 'POST',
-        body: tgFormData,
-      });
-
-      const tgData = await tgRes.json();
-      if (tgData.ok) {
-        const fileId = type === 'video'
-          ? (tgData.result?.video?.file_id || tgData.result?.document?.file_id)
-          : (tgData.result?.photo?.[tgData.result.photo.length - 1]?.file_id || tgData.result?.document?.file_id);
-
-        if (fileId) {
-          const fileRes = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${fileId}`);
-          const fileData = await fileRes.json();
-          if (fileData.ok && fileData.result?.file_path) {
-            return `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileData.result.file_path}`;
+  const processImageFile = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1600;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
           }
-        }
-      }
-    } catch (tgErr) {
-      console.warn('Telegram direct upload failed, trying fallback...', tgErr);
-    }
-
-    // 2. Fallback to /api/upload
-    const formData = new FormData();
-    formData.append('file', file);
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx?.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.82));
+        };
+        img.onerror = () => resolve(e.target?.result as string);
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
-    const data = await res.json();
-    if (data.url) return data.url;
+  };
 
-    throw new Error(data.error || 'فشل رفع الملف');
+  const processVideoFile = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resolve(e.target?.result as string);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'photo' | 'video') => {
@@ -140,9 +140,13 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
     try {
       const newUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
-        const url = await uploadSingleFile(files[i], type);
-        if (url) {
-          newUrls.push(url);
+        const file = files[i];
+        if (type === 'photo') {
+          const dataUrl = await processImageFile(file);
+          newUrls.push(dataUrl);
+        } else {
+          const dataUrl = await processVideoFile(file);
+          newUrls.push(dataUrl);
         }
       }
 
@@ -163,7 +167,7 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
         });
       }
     } catch (err: any) {
-      alert(`حدث خطأ أثناء رفع الملف: ${err?.message || 'يرجى المحاولة مرة أخرى'}`);
+      alert(`حدث خطأ أثناء معالجة الملف: ${err?.message || 'يرجى المحاولة مرة أخرى'}`);
     } finally {
       setUploadingType(null);
       e.target.value = '';
