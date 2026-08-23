@@ -11,19 +11,20 @@ datasource db {
 }
 
 model Dress {
-  id          Int            @id @default(autoincrement())
-  name        String
-  nickname    String?
-  description String?
+  id            Int            @id @default(autoincrement())
+  telegramMsgId Int?           @unique
+  name          String
+  nickname      String?
+  description   String?
   price         Float
   originalPrice Float?
   sortOrder     Int            @default(0)
   isNew         Boolean        @default(true)
-  isFeatured  Boolean        @default(false)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  variants    DressVariant[]
-  orderItems  OrderItem[]
+  isFeatured    Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  variants      DressVariant[]
+  orderItems    OrderItem[]
 }
 
 model DressVariant {

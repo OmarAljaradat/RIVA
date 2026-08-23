@@ -76,6 +76,7 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 export const DressScalarFieldEnum = {
   id: 'id',
+  telegramMsgId: 'telegramMsgId',
   name: 'name',
   nickname: 'nickname',
   description: 'description',

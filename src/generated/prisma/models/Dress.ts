@@ -28,6 +28,7 @@ export type AggregateDress = {
 
 export type DressAvgAggregateOutputType = {
   id: number | null
+  telegramMsgId: number | null
   price: number | null
   originalPrice: number | null
   sortOrder: number | null
@@ -35,6 +36,7 @@ export type DressAvgAggregateOutputType = {
 
 export type DressSumAggregateOutputType = {
   id: number | null
+  telegramMsgId: number | null
   price: number | null
   originalPrice: number | null
   sortOrder: number | null
@@ -42,6 +44,7 @@ export type DressSumAggregateOutputType = {
 
 export type DressMinAggregateOutputType = {
   id: number | null
+  telegramMsgId: number | null
   name: string | null
   nickname: string | null
   description: string | null
@@ -56,6 +59,7 @@ export type DressMinAggregateOutputType = {
 
 export type DressMaxAggregateOutputType = {
   id: number | null
+  telegramMsgId: number | null
   name: string | null
   nickname: string | null
   description: string | null
@@ -70,6 +74,7 @@ export type DressMaxAggregateOutputType = {
 
 export type DressCountAggregateOutputType = {
   id: number
+  telegramMsgId: number
   name: number
   nickname: number
   description: number
@@ -86,6 +91,7 @@ export type DressCountAggregateOutputType = {
 
 export type DressAvgAggregateInputType = {
   id?: true
+  telegramMsgId?: true
   price?: true
   originalPrice?: true
   sortOrder?: true
@@ -93,6 +99,7 @@ export type DressAvgAggregateInputType = {
 
 export type DressSumAggregateInputType = {
   id?: true
+  telegramMsgId?: true
   price?: true
   originalPrice?: true
   sortOrder?: true
@@ -100,6 +107,7 @@ export type DressSumAggregateInputType = {
 
 export type DressMinAggregateInputType = {
   id?: true
+  telegramMsgId?: true
   name?: true
   nickname?: true
   description?: true
@@ -114,6 +122,7 @@ export type DressMinAggregateInputType = {
 
 export type DressMaxAggregateInputType = {
   id?: true
+  telegramMsgId?: true
   name?: true
   nickname?: true
   description?: true
@@ -128,6 +137,7 @@ export type DressMaxAggregateInputType = {
 
 export type DressCountAggregateInputType = {
   id?: true
+  telegramMsgId?: true
   name?: true
   nickname?: true
   description?: true
@@ -229,6 +239,7 @@ export type DressGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
 
 export type DressGroupByOutputType = {
   id: number
+  telegramMsgId: number | null
   name: string
   nickname: string | null
   description: string | null
@@ -266,6 +277,7 @@ export type DressWhereInput = {
   OR?: Prisma.DressWhereInput[]
   NOT?: Prisma.DressWhereInput | Prisma.DressWhereInput[]
   id?: Prisma.IntFilter<"Dress"> | number
+  telegramMsgId?: Prisma.IntNullableFilter<"Dress"> | number | null
   name?: Prisma.StringFilter<"Dress"> | string
   nickname?: Prisma.StringNullableFilter<"Dress"> | string | null
   description?: Prisma.StringNullableFilter<"Dress"> | string | null
@@ -282,6 +294,7 @@ export type DressWhereInput = {
 
 export type DressOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  telegramMsgId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   nickname?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -298,6 +311,7 @@ export type DressOrderByWithRelationInput = {
 
 export type DressWhereUniqueInput = Prisma.AtLeast<{
   id?: number
+  telegramMsgId?: number
   AND?: Prisma.DressWhereInput | Prisma.DressWhereInput[]
   OR?: Prisma.DressWhereInput[]
   NOT?: Prisma.DressWhereInput | Prisma.DressWhereInput[]
@@ -313,10 +327,11 @@ export type DressWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Dress"> | Date | string
   variants?: Prisma.DressVariantListRelationFilter
   orderItems?: Prisma.OrderItemListRelationFilter
-}, "id">
+}, "id" | "telegramMsgId">
 
 export type DressOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  telegramMsgId?: Prisma.SortOrderInput | Prisma.SortOrder
   name?: Prisma.SortOrder
   nickname?: Prisma.SortOrderInput | Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -339,6 +354,7 @@ export type DressScalarWhereWithAggregatesInput = {
   OR?: Prisma.DressScalarWhereWithAggregatesInput[]
   NOT?: Prisma.DressScalarWhereWithAggregatesInput | Prisma.DressScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Dress"> | number
+  telegramMsgId?: Prisma.IntNullableWithAggregatesFilter<"Dress"> | number | null
   name?: Prisma.StringWithAggregatesFilter<"Dress"> | string
   nickname?: Prisma.StringNullableWithAggregatesFilter<"Dress"> | string | null
   description?: Prisma.StringNullableWithAggregatesFilter<"Dress"> | string | null
@@ -352,6 +368,7 @@ export type DressScalarWhereWithAggregatesInput = {
 }
 
 export type DressCreateInput = {
+  telegramMsgId?: number | null
   name: string
   nickname?: string | null
   description?: string | null
@@ -368,6 +385,7 @@ export type DressCreateInput = {
 
 export type DressUncheckedCreateInput = {
   id?: number
+  telegramMsgId?: number | null
   name: string
   nickname?: string | null
   description?: string | null
@@ -383,6 +401,7 @@ export type DressUncheckedCreateInput = {
 }
 
 export type DressUpdateInput = {
+  telegramMsgId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -399,6 +418,7 @@ export type DressUpdateInput = {
 
 export type DressUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  telegramMsgId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -415,6 +435,7 @@ export type DressUncheckedUpdateInput = {
 
 export type DressCreateManyInput = {
   id?: number
+  telegramMsgId?: number | null
   name: string
   nickname?: string | null
   description?: string | null
@@ -428,6 +449,7 @@ export type DressCreateManyInput = {
 }
 
 export type DressUpdateManyMutationInput = {
+  telegramMsgId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -442,6 +464,7 @@ export type DressUpdateManyMutationInput = {
 
 export type DressUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  telegramMsgId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -456,6 +479,7 @@ export type DressUncheckedUpdateManyInput = {
 
 export type DressCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  telegramMsgId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   nickname?: Prisma.SortOrder
   description?: Prisma.SortOrder
@@ -470,6 +494,7 @@ export type DressCountOrderByAggregateInput = {
 
 export type DressAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  telegramMsgId?: Prisma.SortOrder
   price?: Prisma.SortOrder
   originalPrice?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -477,6 +502,7 @@ export type DressAvgOrderByAggregateInput = {
 
 export type DressMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  telegramMsgId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   nickname?: Prisma.SortOrder
   description?: Prisma.SortOrder
@@ -491,6 +517,7 @@ export type DressMaxOrderByAggregateInput = {
 
 export type DressMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  telegramMsgId?: Prisma.SortOrder
   name?: Prisma.SortOrder
   nickname?: Prisma.SortOrder
   description?: Prisma.SortOrder
@@ -505,6 +532,7 @@ export type DressMinOrderByAggregateInput = {
 
 export type DressSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  telegramMsgId?: Prisma.SortOrder
   price?: Prisma.SortOrder
   originalPrice?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
@@ -513,6 +541,14 @@ export type DressSumOrderByAggregateInput = {
 export type DressScalarRelationFilter = {
   is?: Prisma.DressWhereInput
   isNot?: Prisma.DressWhereInput
+}
+
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type StringFieldUpdateOperationsInput = {
@@ -584,6 +620,7 @@ export type DressUpdateOneRequiredWithoutOrderItemsNestedInput = {
 }
 
 export type DressCreateWithoutVariantsInput = {
+  telegramMsgId?: number | null
   name: string
   nickname?: string | null
   description?: string | null
@@ -599,6 +636,7 @@ export type DressCreateWithoutVariantsInput = {
 
 export type DressUncheckedCreateWithoutVariantsInput = {
   id?: number
+  telegramMsgId?: number | null
   name: string
   nickname?: string | null
   description?: string | null
@@ -629,6 +667,7 @@ export type DressUpdateToOneWithWhereWithoutVariantsInput = {
 }
 
 export type DressUpdateWithoutVariantsInput = {
+  telegramMsgId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -644,6 +683,7 @@ export type DressUpdateWithoutVariantsInput = {
 
 export type DressUncheckedUpdateWithoutVariantsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  telegramMsgId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -658,6 +698,7 @@ export type DressUncheckedUpdateWithoutVariantsInput = {
 }
 
 export type DressCreateWithoutOrderItemsInput = {
+  telegramMsgId?: number | null
   name: string
   nickname?: string | null
   description?: string | null
@@ -673,6 +714,7 @@ export type DressCreateWithoutOrderItemsInput = {
 
 export type DressUncheckedCreateWithoutOrderItemsInput = {
   id?: number
+  telegramMsgId?: number | null
   name: string
   nickname?: string | null
   description?: string | null
@@ -703,6 +745,7 @@ export type DressUpdateToOneWithWhereWithoutOrderItemsInput = {
 }
 
 export type DressUpdateWithoutOrderItemsInput = {
+  telegramMsgId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -718,6 +761,7 @@ export type DressUpdateWithoutOrderItemsInput = {
 
 export type DressUncheckedUpdateWithoutOrderItemsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  telegramMsgId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   name?: Prisma.StringFieldUpdateOperationsInput | string
   nickname?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -773,6 +817,7 @@ export type DressCountOutputTypeCountOrderItemsArgs<ExtArgs extends runtime.Type
 
 export type DressSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  telegramMsgId?: boolean
   name?: boolean
   nickname?: boolean
   description?: boolean
@@ -790,6 +835,7 @@ export type DressSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
 
 export type DressSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  telegramMsgId?: boolean
   name?: boolean
   nickname?: boolean
   description?: boolean
@@ -804,6 +850,7 @@ export type DressSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 
 export type DressSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  telegramMsgId?: boolean
   name?: boolean
   nickname?: boolean
   description?: boolean
@@ -818,6 +865,7 @@ export type DressSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
 
 export type DressSelectScalar = {
   id?: boolean
+  telegramMsgId?: boolean
   name?: boolean
   nickname?: boolean
   description?: boolean
@@ -830,7 +878,7 @@ export type DressSelectScalar = {
   updatedAt?: boolean
 }
 
-export type DressOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "nickname" | "description" | "price" | "originalPrice" | "sortOrder" | "isNew" | "isFeatured" | "createdAt" | "updatedAt", ExtArgs["result"]["dress"]>
+export type DressOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "telegramMsgId" | "name" | "nickname" | "description" | "price" | "originalPrice" | "sortOrder" | "isNew" | "isFeatured" | "createdAt" | "updatedAt", ExtArgs["result"]["dress"]>
 export type DressInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   variants?: boolean | Prisma.Dress$variantsArgs<ExtArgs>
   orderItems?: boolean | Prisma.Dress$orderItemsArgs<ExtArgs>
@@ -847,6 +895,7 @@ export type $DressPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
+    telegramMsgId: number | null
     name: string
     nickname: string | null
     description: string | null
@@ -1283,6 +1332,7 @@ export interface Prisma__DressClient<T, Null = never, ExtArgs extends runtime.Ty
  */
 export interface DressFieldRefs {
   readonly id: Prisma.FieldRef<"Dress", 'Int'>
+  readonly telegramMsgId: Prisma.FieldRef<"Dress", 'Int'>
   readonly name: Prisma.FieldRef<"Dress", 'String'>
   readonly nickname: Prisma.FieldRef<"Dress", 'String'>
   readonly description: Prisma.FieldRef<"Dress", 'String'>
