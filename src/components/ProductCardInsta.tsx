@@ -40,7 +40,7 @@ export default function ProductCardInsta({ product }: ProductCardProps) {
         let photo = '/uploads/dress1.jpg';
         if (v.images && v.images.length > 0) {
           // Prefer static image (.jpg/.png) if available, otherwise take video
-          const imgFile = v.images.find(img => img.url && (img.url.endsWith('.jpg') || img.url.endsWith('.jpeg') || img.url.endsWith('.png') || img.url.endsWith('.webp')));
+          const imgFile = v.images.find(img => img.url && (img.url.includes('.jpg') || img.url.includes('.jpeg') || img.url.includes('.png') || img.url.includes('.webp')));
           if (imgFile) {
             photo = imgFile.url;
           } else if (v.images[0]?.url) {
