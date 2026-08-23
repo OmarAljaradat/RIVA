@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-import os from 'os';
+import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -9,78 +7,71 @@ export const maxDuration = 60;
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const chunk = formData.get('chunk') as File;
-    const chunkIndex = parseInt(formData.get('chunkIndex') as string || '0', 10);
-    const totalChunks = parseInt(formData.get('totalChunks') as string || '1', 10);
-    const uploadId = (formData.get('uploadId') as string || 'upload_' + Date.now()).replace(/[^a-zA-Z0-9_-]/g, '');
-    const fileName = (formData.get('fileName') as string || 'media.mp4').replace(/[^a-zA-Z0-9._-]/g, '_');
+    const chunkFile = formData.get('chunk') as File;
+    const chunkIndex = parseInt(formData.get('chunkIndex') as string, 10);
+    const totalChunks = parseInt(formData.get('totalChunks') as string, 10);
+    const uploadId = formData.get('uploadId') as string;
+    const fileName = (formData.get('fileName') as string) || 'video.mp4';
 
-    if (!chunk) {
-      return NextResponse.json({ error: 'لم يتم استلام أي جزء من الملف' }, { status: 400 });
+    if (!chunkFile || isNaN(chunkIndex) || isNaN(totalChunks) || !uploadId) {
+      return NextResponse.json({ error: 'بيانات غير صالحة' }, { status: 400 });
     }
 
-    const tempDir = path.join(os.tmpdir(), 'riva_uploads', uploadId);
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
+    // Convert chunk to base64
+    const buffer = Buffer.from(await chunkFile.arrayBuffer());
+    const base64Data = buffer.toString('base64');
 
-    // Save chunk
-    const chunkBuffer = Buffer.from(await chunk.arrayBuffer());
-    const chunkPath = path.join(tempDir, `chunk_${chunkIndex}`);
-    fs.writeFileSync(chunkPath, chunkBuffer);
+    // Save this chunk into PostgreSQL Neon (shared across all lambda instances)
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "UploadChunk" ("uploadId", "chunkIndex", data) VALUES ($1, $2, $3)`,
+      uploadId,
+      chunkIndex,
+      base64Data
+    );
 
-    // If not the last chunk, acknowledge receipt
+    // If not final chunk, return success
     if (chunkIndex < totalChunks - 1) {
-      return NextResponse.json({ success: true, progress: Math.round(((chunkIndex + 1) / totalChunks) * 100) });
+      return NextResponse.json({ success: true, chunkIndex, totalChunks });
     }
 
-    // Last chunk received -> Combine all chunks
-    const finalFilePath = path.join(tempDir, fileName);
-    const writeStream = fs.createWriteStream(finalFilePath);
+    // Final chunk reached: Fetch all chunks from DB ordered by chunkIndex
+    const rows: { data: string }[] = await prisma.$queryRawUnsafe(
+      `SELECT data FROM "UploadChunk" WHERE "uploadId" = $1 ORDER BY "chunkIndex" ASC`,
+      uploadId
+    );
 
-    for (let i = 0; i < totalChunks; i++) {
-      const currentChunkPath = path.join(tempDir, `chunk_${i}`);
-      if (fs.existsSync(currentChunkPath)) {
-        const data = fs.readFileSync(currentChunkPath);
-        writeStream.write(data);
-        fs.unlinkSync(currentChunkPath); // clean chunk
-      }
-    }
-    writeStream.end();
+    // Combine all chunk buffers
+    const allBuffers = rows.map(r => Buffer.from(r.data, 'base64'));
+    const combinedBuffer = Buffer.concat(allBuffers);
 
-    await new Promise<void>((resolve, reject) => {
-      writeStream.on('finish', () => resolve());
-      writeStream.on('error', (err) => reject(err));
-    });
+    // Clean up temporary chunks from database
+    await prisma.$executeRawUnsafe(
+      `DELETE FROM "UploadChunk" WHERE "uploadId" = $1`,
+      uploadId
+    );
 
-    // Upload combined file to Catbox CDN
-    const finalBuffer = fs.readFileSync(finalFilePath);
-    const blob = new Blob([finalBuffer], { type: chunk.type || 'video/mp4' });
+    // Upload complete file to Catbox CDN
+    const isVideo = fileName.endsWith('.mp4') || fileName.endsWith('.webm') || fileName.endsWith('.mov');
+    const mime = isVideo ? 'video/mp4' : 'image/jpeg';
+    const blob = new Blob([new Uint8Array(combinedBuffer)], { type: mime });
 
-    const cdnFormData = new FormData();
-    cdnFormData.append('reqtype', 'fileupload');
-    cdnFormData.append('fileToUpload', blob, fileName);
+    const uploadFormData = new FormData();
+    uploadFormData.append('reqtype', 'fileupload');
+    uploadFormData.append('fileToUpload', blob, fileName);
 
     const cdnRes = await fetch('https://catbox.moe/user/api.php', {
       method: 'POST',
-      body: cdnFormData,
+      body: uploadFormData,
     });
 
     const cdnUrl = (await cdnRes.text()).trim();
-
-    // Clean up temporary directory
-    try {
-      if (fs.existsSync(finalFilePath)) fs.unlinkSync(finalFilePath);
-      if (fs.existsSync(tempDir)) fs.rmdirSync(tempDir);
-    } catch {}
-
     if (cdnUrl.startsWith('https://files.catbox.moe/')) {
       return NextResponse.json({ url: cdnUrl, success: true });
     }
 
-    return NextResponse.json({ error: 'فشل حفظ الملف على السحابة: ' + cdnUrl }, { status: 500 });
+    return NextResponse.json({ error: 'فشل الرفع للـ CDN' }, { status: 500 });
   } catch (error: any) {
     console.error('Chunk upload error:', error);
-    return NextResponse.json({ error: error?.message || 'حدث خطأ أثناء رفع الفيديو' }, { status: 500 });
+    return NextResponse.json({ error: error?.message || 'خطأ في معالجة الجزء' }, { status: 500 });
   }
 }

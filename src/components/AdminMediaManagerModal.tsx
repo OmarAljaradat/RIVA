@@ -68,6 +68,7 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
   });
 
   const [uploadingType, setUploadingType] = useState<'photo' | 'video' | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [syncingTgMedia, setSyncingTgMedia] = useState(false);
 
@@ -143,15 +144,41 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
     });
   };
 
-  const processVideoFile = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        resolve(e.target?.result as string);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
+  const uploadVideoFile = async (file: File): Promise<string> => {
+    const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB per chunk
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const uploadId = 'up_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+
+    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+      const start = chunkIndex * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, file.size);
+      const chunkBlob = file.slice(start, end);
+
+      const formData = new FormData();
+      formData.append('chunk', chunkBlob, file.name);
+      formData.append('chunkIndex', chunkIndex.toString());
+      formData.append('totalChunks', totalChunks.toString());
+      formData.append('uploadId', uploadId);
+      formData.append('fileName', file.name);
+
+      setUploadProgress(Math.round(((chunkIndex + 1) / totalChunks) * 100));
+
+      const res = await fetch('/api/upload/chunk', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || `فشل رفع جزء الفيديو (${chunkIndex + 1}/${totalChunks})`);
+      }
+
+      if (data.url) {
+        return data.url;
+      }
+    }
+
+    throw new Error('لم يتم استلام رابط الفيديو');
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'photo' | 'video') => {
@@ -159,6 +186,7 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
     if (!files || files.length === 0) return;
 
     setUploadingType(type);
+    setUploadProgress(0);
     try {
       const newUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
@@ -167,8 +195,8 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
           const dataUrl = await processImageFile(file);
           newUrls.push(dataUrl);
         } else {
-          const dataUrl = await processVideoFile(file);
-          newUrls.push(dataUrl);
+          const videoUrl = await uploadVideoFile(file);
+          newUrls.push(videoUrl);
         }
       }
 
@@ -192,6 +220,7 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
       alert(`حدث خطأ أثناء معالجة الملف: ${err?.message || 'يرجى المحاولة مرة أخرى'}`);
     } finally {
       setUploadingType(null);
+      setUploadProgress(null);
       e.target.value = '';
     }
   };
@@ -439,7 +468,7 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <label className="btn-luxe-admin" style={{ cursor: 'pointer', margin: 0, fontSize: '12px', padding: '7px 14px', background: '#1E293B' }}>
-                {uploadingType === 'video' ? '⏳ جاري رفع الفيديو...' : '🎥 + رفع مقطع فيديو (MP4)'}
+                {uploadingType === 'video' ? (uploadProgress !== null ? `⏳ جاري رفع الفيديو (${uploadProgress}%)...` : '⏳ جاري رفع الفيديو...') : '🎥 + رفع مقطع فيديو (MP4)'}
                 <input
                   type="file"
                   accept="video/mp4,video/webm,video/quicktime"
