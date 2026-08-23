@@ -18,12 +18,12 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
       // الخطوط
       "font-src 'self' https://fonts.gstatic.com https://unpkg.com data:",
-      // الصور: محلية + data URIs + blob للمعاينة
-      "img-src 'self' data: blob:",
-      // الوسائط (فيديو): محلية + blob
-      "media-src 'self' blob:",
+      // الصور: محلية + data URIs + blob للمعاينة + GitHub CDN
+      "img-src 'self' data: blob: https://raw.githubusercontent.com",
+      // الوسائط (فيديو): محلية + blob + GitHub CDN
+      "media-src 'self' blob: https://raw.githubusercontent.com",
       // الاتصالات: محلية فقط (API calls)
-      "connect-src 'self'",
+      "connect-src 'self' https://raw.githubusercontent.com",
       // منع التضمين في iframes من أي موقع
       "frame-ancestors 'none'",
       // منع plugins (Flash إلخ)
