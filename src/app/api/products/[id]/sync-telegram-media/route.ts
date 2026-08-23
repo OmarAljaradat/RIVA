@@ -81,12 +81,13 @@ export async function POST(
     // For each media message, upload to Catbox or generate streaming URL
     for (const rm of relatedMediaMsgs) {
       try {
-        const buffer = await client.downloadMedia(rm.media, { workers: 2 });
-        if (buffer && (buffer as Buffer).length > 0) {
+        const buffer = await client.downloadMedia(rm.media, {} as any);
+        if (buffer && (buffer as any).length > 0) {
           const isVideo = rm.media?.className === 'MessageMediaDocument' && rm.media?.document?.mimeType?.includes('video');
           const ext = isVideo ? 'mp4' : 'jpg';
           const mime = isVideo ? 'video/mp4' : 'image/jpeg';
-          const blob = new Blob([buffer as Buffer], { type: mime });
+          const uint8 = new Uint8Array(buffer as any);
+          const blob = new Blob([uint8], { type: mime });
 
           const uploadFormData = new FormData();
           uploadFormData.append('reqtype', 'fileupload');
