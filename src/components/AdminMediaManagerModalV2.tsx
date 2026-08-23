@@ -40,6 +40,10 @@ export default function AdminMediaManagerModalV2({ product, onClose, onUpdate }:
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
+  // Direct URL inline inputs
+  const [customPhotoUrl, setCustomPhotoUrl] = useState('');
+  const [customVideoUrl, setCustomVideoUrl] = useState('');
+
   useEffect(() => {
     const colorSet = new Set<string>();
     const initialMedia: Record<string, string[]> = {};
@@ -130,7 +134,7 @@ export default function AdminMediaManagerModalV2({ product, onClose, onUpdate }:
   };
 
   const uploadVideoChunked = async (file: File): Promise<string> => {
-    const CHUNK_SIZE = 1.5 * 1024 * 1024; // 1.5MB per chunk (completely safe for any network / lambda)
+    const CHUNK_SIZE = 1024 * 1024; // 1MB per chunk for 100% stability
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
     const uploadId = 'up_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
 
@@ -155,7 +159,7 @@ export default function AdminMediaManagerModalV2({ product, onClose, onUpdate }:
 
       const data = await res.json();
       if (!res.ok || data.error) {
-        throw new Error(data.error || `خطأ في رفع الجزء (${chunkIndex + 1}/${totalChunks})`);
+        throw new Error(data.error || `خطأ في معالجة الجزء (${chunkIndex + 1}/${totalChunks})`);
       }
 
       if (data.url) {
@@ -196,7 +200,7 @@ export default function AdminMediaManagerModalV2({ product, onClose, onUpdate }:
         });
       }
     } catch (err: any) {
-      alert(`حدث خطأ أثناء معالجة الملف: ${err?.message || 'يرجى المحاولة مرة أخرى'}`);
+      alert(`حدث خطأ أثناء معالجة الملف: ${err?.message || 'يرجى المحاولة مرة أخرى أو وضع رابط مباشر'}`);
     } finally {
       setUploadingType(null);
       setUploadProgress(null);
@@ -211,18 +215,17 @@ export default function AdminMediaManagerModalV2({ product, onClose, onUpdate }:
     }));
   };
 
-  const handleAddUrlPrompt = (type: 'photo' | 'video') => {
-    const promptText = type === 'video' 
-      ? 'أدخل رابط الفيديو المباشر (ينتهي بـ .mp4):'
-      : 'أدخل رابط الصورة المباشر:';
-    const url = prompt(promptText);
-    if (url && url.trim()) {
-      const cleanUrl = url.trim();
-      setMediaMap(prev => ({
-        ...prev,
-        [activeColor]: [...(prev[activeColor] || []), cleanUrl],
-      }));
-    }
+  const handleAddDirectUrl = (type: 'photo' | 'video') => {
+    const targetUrl = type === 'photo' ? customPhotoUrl.trim() : customVideoUrl.trim();
+    if (!targetUrl) return;
+
+    setMediaMap(prev => ({
+      ...prev,
+      [activeColor]: [...(prev[activeColor] || []), targetUrl],
+    }));
+
+    if (type === 'photo') setCustomPhotoUrl('');
+    else setCustomVideoUrl('');
   };
 
   const handleSave = async () => {
@@ -274,7 +277,7 @@ export default function AdminMediaManagerModalV2({ product, onClose, onUpdate }:
       <div style={{
         background: '#FFFFFF',
         borderRadius: '24px',
-        maxWidth: '860px',
+        maxWidth: '880px',
         width: '100%',
         maxHeight: '92vh',
         overflowY: 'auto',
@@ -307,13 +310,13 @@ export default function AdminMediaManagerModalV2({ product, onClose, onUpdate }:
           ✕
         </button>
 
-        {/* Modal Header with Live Version Badge */}
+        {/* Modal Header */}
         <div style={{ marginBottom: '18px', borderBottom: '1.5px solid #F1F5F9', paddingBottom: '14px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#ECFDF5', border: '1px solid #10B981', padding: '4px 12px', borderRadius: '8px', color: '#065F46', fontSize: '12px', fontWeight: 800, marginBottom: '6px' }}>
-            🟢 لوحة الوسائط المباشرة V2.6 (محدثة وتعمل بدون كاش)
+            🟢 ستوديو إدارة الوسائط والمقاسات (V2.7) — رفع فوري متعدد الخيارات
           </div>
           <h2 style={{ fontSize: '22px', fontWeight: 900, color: '#0F172A', margin: '4px 0' }}>
-            🎨 إدارة صور وفيديوهات ومقاسات اللون: <span style={{ color: '#722F37' }}>({activeColor})</span>
+            🎨 صور وفيديوهات ومقاسات اللون: <span style={{ color: '#722F37' }}>({activeColor})</span>
           </h2>
           <p style={{ color: '#64748B', fontSize: '13px', margin: 0 }}>
             الفستان: <strong>{product.name}</strong> ({product.price} د.أ)
@@ -324,7 +327,6 @@ export default function AdminMediaManagerModalV2({ product, onClose, onUpdate }:
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '16px' }}>
           {colors.map(color => {
             const isActive = color === activeColor;
-            const mediaCount = (mediaMap[color] || []).length;
             const photoCount = (mediaMap[color] || []).filter(u => !isVideoUrl(u)).length;
             const videoCount = (mediaMap[color] || []).filter(u => isVideoUrl(u)).length;
 
@@ -373,35 +375,62 @@ export default function AdminMediaManagerModalV2({ product, onClose, onUpdate }:
                 📸 صور الفستان لهذا اللون ({activeColor})
               </h4>
               <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
-                ✨ تظهر فوراً للزبائن وبسرعة فائقة (الصورة الأولى ستكون الغلاف الأساسي).
+                ✨ الصورة الأولى ستكون الغلاف الرئيسي المعروض في المتجر.
               </span>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <label className="btn-luxe-admin" style={{ cursor: 'pointer', margin: 0, fontSize: '12px', padding: '7px 14px', background: '#722F37' }}>
-                {uploadingType === 'photo' ? '⏳ جاري إضافة الصور...' : '🖼️ + رفع صورة من جهازك'}
-                <input
-                  type="file"
-                  multiple
-                  accept="image/jpeg,image/png,image/webp"
-                  disabled={uploadingType !== null}
-                  onChange={e => handleFileUpload(e, 'photo')}
-                  style={{ display: 'none' }}
-                />
-              </label>
-              <button
-                type="button"
-                onClick={() => handleAddUrlPrompt('photo')}
-                className="btn-luxe-outline"
-                style={{ fontSize: '12px', padding: '7px 12px' }}
-              >
-                🔗 رابط صورة
-              </button>
-            </div>
+            <label className="btn-luxe-admin" style={{ cursor: 'pointer', margin: 0, fontSize: '12px', padding: '8px 16px', background: '#722F37' }}>
+              {uploadingType === 'photo' ? '⏳ جاري إضافة الصور...' : '🖼️ + رفع صورة من جهازك'}
+              <input
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp"
+                disabled={uploadingType !== null}
+                onChange={e => handleFileUpload(e, 'photo')}
+                style={{ display: 'none' }}
+              />
+            </label>
+          </div>
+
+          {/* Direct Photo URL Input Bar */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+            <input
+              type="text"
+              value={customPhotoUrl}
+              onChange={e => setCustomPhotoUrl(e.target.value)}
+              placeholder="أو الصق رابط صورة مباشر هنا (https://...)..."
+              onKeyDown={e => { if (e.key === 'Enter') handleAddDirectUrl('photo'); }}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '10px',
+                border: '1px solid #D1D5DB',
+                fontSize: '13px',
+                outline: 'none',
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => handleAddDirectUrl('photo')}
+              disabled={!customPhotoUrl.trim()}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '10px',
+                border: 'none',
+                background: '#722F37',
+                color: '#fff',
+                fontWeight: 800,
+                fontSize: '12px',
+                cursor: customPhotoUrl.trim() ? 'pointer' : 'not-allowed',
+                opacity: customPhotoUrl.trim() ? 1 : 0.6,
+              }}
+            >
+              + إضافة الرابط
+            </button>
           </div>
 
           {currentPhotos.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px', color: '#94A3B8', fontSize: '13px', background: '#FFFFFF', borderRadius: '12px', border: '1px dashed #CBD5E1' }}>
-              🖼️ لا توجد صور لهذا اللون بعد. اضغط زر &quot;رفع صورة من جهازك&quot; للبدء.
+            <div style={{ textAlign: 'center', padding: '20px', color: '#94A3B8', fontSize: '13px', background: '#FFFFFF', borderRadius: '12px', border: '1px dashed #CBD5E1' }}>
+              🖼️ لا توجد صور لهذا اللون بعد.
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: '12px' }}>
@@ -439,34 +468,61 @@ export default function AdminMediaManagerModalV2({ product, onClose, onUpdate }:
                 🎬 فيديو الفستان لهذا اللون ({activeColor})
               </h4>
               <span style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>
-                ⚡ اختياري — يتم رفعه بمشغل مباشر ويتم تشغيله للزبائن بسلاسة فائقة.
+                ⚡ يمكنك رفع فيديو من جهازك مباشرة، أو لصق رابط فيديو مباشر (MP4).
               </span>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <label className="btn-luxe-admin" style={{ cursor: 'pointer', margin: 0, fontSize: '12px', padding: '8px 16px', background: '#1E293B', borderRadius: '10px' }}>
-                {uploadingType === 'video' ? (uploadProgress !== null ? `⏳ جاري رفع الفيديو (${uploadProgress}%)...` : '⏳ جاري الرفع...') : '🎥 + رفع مقطع فيديو من جهازك (MP4)'}
-                <input
-                  type="file"
-                  accept="video/mp4,video/webm,video/quicktime,video/*"
-                  disabled={uploadingType !== null}
-                  onChange={e => handleFileUpload(e, 'video')}
-                  style={{ display: 'none' }}
-                />
-              </label>
-              <button
-                type="button"
-                onClick={() => handleAddUrlPrompt('video')}
-                className="btn-luxe-outline"
-                style={{ fontSize: '12px', padding: '7px 12px' }}
-              >
-                🔗 رابط فيديو
-              </button>
-            </div>
+            <label className="btn-luxe-admin" style={{ cursor: 'pointer', margin: 0, fontSize: '12px', padding: '8px 18px', background: '#1E293B', borderRadius: '10px' }}>
+              {uploadingType === 'video' ? (uploadProgress !== null ? `⏳ جاري رفع الفيديو (${uploadProgress}%)...` : '⏳ جاري الرفع...') : '🎥 + رفع مقطع فيديو (MP4)'}
+              <input
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime,video/*"
+                disabled={uploadingType !== null}
+                onChange={e => handleFileUpload(e, 'video')}
+                style={{ display: 'none' }}
+              />
+            </label>
+          </div>
+
+          {/* Direct Video URL Input Bar */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+            <input
+              type="text"
+              value={customVideoUrl}
+              onChange={e => setCustomVideoUrl(e.target.value)}
+              placeholder="أو الصق رابط فيديو مباشر هنا (https://...mp4)..."
+              onKeyDown={e => { if (e.key === 'Enter') handleAddDirectUrl('video'); }}
+              style={{
+                flex: 1,
+                padding: '8px 12px',
+                borderRadius: '10px',
+                border: '1px solid #CBD5E1',
+                fontSize: '13px',
+                outline: 'none',
+              }}
+            />
+            <button
+              type="button"
+              onClick={() => handleAddDirectUrl('video')}
+              disabled={!customVideoUrl.trim()}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '10px',
+                border: 'none',
+                background: '#1E293B',
+                color: '#fff',
+                fontWeight: 800,
+                fontSize: '12px',
+                cursor: customVideoUrl.trim() ? 'pointer' : 'not-allowed',
+                opacity: customVideoUrl.trim() ? 1 : 0.6,
+              }}
+            >
+              + إضافة الفيديو
+            </button>
           </div>
 
           {currentVideos.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '24px', color: '#94A3B8', fontSize: '13px', background: '#FFFFFF', borderRadius: '12px', border: '1px dashed #CBD5E1' }}>
-              🎥 لا يوجد فيديو لهذا اللون حالياً. يمكنك رفع فيديو MP4 من جهازك بسهولة.
+            <div style={{ textAlign: 'center', padding: '20px', color: '#94A3B8', fontSize: '13px', background: '#FFFFFF', borderRadius: '12px', border: '1px dashed #CBD5E1' }}>
+              🎥 لا يوجد فيديو لهذا اللون حالياً.
             </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px' }}>
