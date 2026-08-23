@@ -333,7 +333,9 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
         {/* Modal Header */}
         <div style={{ marginBottom: '18px', borderBottom: '1.5px solid #F3F4F6', paddingBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
           <div>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-rose-gold)', letterSpacing: '1px' }}>RIVA MEDIA & SIZES STUDIO</span>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#ECFDF5', border: '1px solid #10B981', padding: '3px 10px', borderRadius: '6px', color: '#065F46', fontSize: '11px', fontWeight: 800, marginBottom: '4px' }}>
+              🟢 نظام الرفع اليدوي المباشر v2.5 مفعل
+            </div>
             <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#111827', margin: '4px 0 2px' }}>
               🎨 إدارة صور وفيديوهات ومقاسات اللون: <span style={{ color: '#722F37' }}>({activeColor})</span>
             </h2>

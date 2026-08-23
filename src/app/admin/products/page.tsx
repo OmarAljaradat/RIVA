@@ -189,9 +189,14 @@ export default function ProductsList() {
         boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
       }}>
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', margin: 0, fontFamily: "'Thmanyah Sans', sans-serif" }}>
-            👗 ترتيب وإدارة كتالوج الفساتين
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+            <h1 style={{ fontSize: '24px', fontWeight: 900, color: '#111827', margin: 0, fontFamily: "'Thmanyah Sans', sans-serif" }}>
+              👗 ترتيب وإدارة كتالوج الفساتين
+            </h1>
+            <span style={{ background: '#ECFDF5', border: '1px solid #10B981', color: '#065F46', fontSize: '11px', fontWeight: 800, padding: '2px 8px', borderRadius: '6px' }}>
+              v2.5 (الرفع اليدوي المباشر)
+            </span>
+          </div>
           <p style={{ color: '#6B7280', fontSize: '14px', marginTop: '4px' }}>
             يمكنك إعادة ترتيب ظهور الفساتين بالكتالوج بالضغط على أزرار الترتيب (⬆️ للأعلى / 🥇 في البداية)
           </p>
