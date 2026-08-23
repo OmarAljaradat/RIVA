@@ -1,7 +1,10 @@
 'use client';
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import AdminMediaManagerModal from '@/components/AdminMediaManagerModal';
+import AdminMediaManagerModalV2 from '@/components/AdminMediaManagerModalV2';
 
 interface Product {
   id: number;
@@ -441,7 +444,7 @@ export default function ProductsList() {
 
       {/* Media Manager Modal */}
       {selectedProductForMedia && (
-        <AdminMediaManagerModal
+        <AdminMediaManagerModalV2
           product={selectedProductForMedia}
           onClose={() => setSelectedProductForMedia(null)}
           onUpdate={fetchProducts}
