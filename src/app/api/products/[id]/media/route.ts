@@ -1,54 +1,118 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
-export async function POST(
+export const dynamic = 'force-dynamic';
+
+export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
     const dressId = Number(id);
-    if (!dressId) return NextResponse.json({ error: 'معرف الفستان غير صحيح' }, { status: 400 });
+    if (!dressId) {
+      return NextResponse.json({ error: 'معرف الفستان غير صحيح' }, { status: 400 });
+    }
 
     const body = await request.json();
-    const { color, imageUrls } = body as { color: string; imageUrls: string[] };
+    const { mediaMap, sizeMap, color, imageUrls } = body;
 
-    if (!color || !Array.isArray(imageUrls)) {
-      return NextResponse.json({ error: 'البيانات غير كافية' }, { status: 400 });
+    // 1. If single color update format was sent
+    if (color && Array.isArray(imageUrls)) {
+      const variants = await prisma.dressVariant.findMany({
+        where: { dressId, color },
+      });
+
+      if (variants.length > 0) {
+        const variantIds = variants.map(v => v.id);
+        await prisma.dressImage.deleteMany({
+          where: { variantId: { in: variantIds } },
+        });
+
+        for (const vId of variantIds) {
+          for (const url of imageUrls) {
+            if (url && typeof url === 'string' && url.trim()) {
+              await prisma.dressImage.create({
+                data: { variantId: vId, url: url.trim() },
+              });
+            }
+          }
+        }
+      }
+      return NextResponse.json({ success: true, message: `تم تحديث وسائط اللون (${color}) بنجاح!` });
     }
 
-    // Find all variants for this dress matching the color
-    const variants = await prisma.dressVariant.findMany({
-      where: { dressId, color },
-    });
+    // 2. If full mediaMap and sizeMap were sent (from Admin Media Studio)
+    if (mediaMap && typeof mediaMap === 'object') {
+      for (const [colName, urls] of Object.entries(mediaMap as Record<string, string[]>)) {
+        const variants = await prisma.dressVariant.findMany({
+          where: { dressId, color: colName },
+        });
 
-    if (variants.length === 0) {
-      return NextResponse.json({ error: 'اللون غير موجود' }, { status: 404 });
-    }
-
-    // Delete existing images for these variants and set new ones
-    const variantIds = variants.map(v => v.id);
-    await prisma.dressImage.deleteMany({
-      where: { variantId: { in: variantIds } },
-    });
-
-    // Create new image records for each variant of this color
-    for (const vId of variantIds) {
-      for (const url of imageUrls) {
-        if (url && url.trim()) {
-          await prisma.dressImage.create({
-            data: {
-              variantId: vId,
-              url: url.trim(),
-            },
+        if (variants.length > 0) {
+          const variantIds = variants.map(v => v.id);
+          // Delete old images for this color
+          await prisma.dressImage.deleteMany({
+            where: { variantId: { in: variantIds } },
           });
+
+          // Insert new images
+          if (Array.isArray(urls)) {
+            for (const vId of variantIds) {
+              for (const u of urls) {
+                if (u && typeof u === 'string' && u.trim()) {
+                  await prisma.dressImage.create({
+                    data: { variantId: vId, url: u.trim() },
+                  });
+                }
+              }
+            }
+          }
         }
       }
     }
 
-    return NextResponse.json({ success: true, message: `تم تحديث وسائط اللون (${color}) بنجاح!` });
+    // 3. Update sizes if sizeMap was provided
+    if (sizeMap && typeof sizeMap === 'object') {
+      for (const [colName, sizesObj] of Object.entries(sizeMap as Record<string, Record<string, boolean>>)) {
+        if (!sizesObj || typeof sizesObj !== 'object') continue;
+
+        for (const [sizeName, isAvailable] of Object.entries(sizesObj)) {
+          const variant = await prisma.dressVariant.findFirst({
+            where: { dressId, color: colName, size: sizeName },
+          });
+
+          if (variant) {
+            await prisma.dressVariant.update({
+              where: { id: variant.id },
+              data: { quantity: isAvailable ? (variant.quantity > 0 ? variant.quantity : 10) : 0 },
+            });
+          } else if (isAvailable) {
+            // Create variant if it didn't exist
+            await prisma.dressVariant.create({
+              data: {
+                dressId,
+                color: colName,
+                colorHex: '#000000',
+                size: sizeName,
+                quantity: 10,
+              },
+            });
+          }
+        }
+      }
+    }
+
+    return NextResponse.json({ success: true, message: 'تم حفظ الوسائط والمقاسات بنجاح تام! ✨' });
   } catch (err: any) {
-    console.error('Error updating variant media:', err);
-    return NextResponse.json({ error: err.message || 'فشل التحديث' }, { status: 500 });
+    console.error('Error saving dress media/sizes:', err);
+    return NextResponse.json({ error: err.message || 'فشل حفظ التعديلات' }, { status: 500 });
   }
+}
+
+export async function POST(
+  request: Request,
+  props: { params: Promise<{ id: string }> }
+) {
+  return PUT(request, props);
 }
