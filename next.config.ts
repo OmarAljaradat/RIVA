@@ -3,42 +3,10 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   // ─── Security Headers ────────────────────────────────────────────────────
   async headers() {
-    // ── Content Security Policy ─────────────────────────────────────────────
-    // مبني على المصادر الخارجية المستخدمة فعلاً في المشروع:
-    //   - fonts.googleapis.com + fonts.gstatic.com → خطوط Cairo, Playfair, Outfit
-    //   - unpkg.com → خط ثمانية (Thmanyah Font)
-    //   - الصور والفيديو محلية من /uploads/
-    //   - Telegram API لا يُستدعى من المتصفح (فقط من السيرفر)
-    // ملاحظة: unsafe-eval مطلوب لـ Next.js (Turbopack) في dev والإنتاج
-    const csp = [
-      "default-src 'self'",
-      // Next.js يحتاج unsafe-inline + unsafe-eval للـ hydration وبعض polyfills
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      // الأنماط: خطوط جوجل + ثمانية + inline styles لـ Next.js
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
-      // الخطوط
-      "font-src 'self' https://fonts.gstatic.com https://unpkg.com data:",
-      // الصور: محلية + data URIs + blob للمعاينة + أي رابط https آمن
-      "img-src 'self' data: blob: https:",
-      // الوسائط (فيديو): محلية + blob + أي رابط https آمن
-      "media-src 'self' blob: https:",
-      // الاتصالات: محلية + https
-      "connect-src 'self' https:",
-      // منع التضمين في iframes من أي موقع
-      "frame-ancestors 'none'",
-      // منع plugins (Flash إلخ)
-      "object-src 'none'",
-      // منع base tag injection
-      "base-uri 'self'",
-    ].join('; ');
-
     return [
       {
         source: '/(.*)',
         headers: [
-          // ── CSP ─────────────────────────────────────────────────────────
-          { key: 'Content-Security-Policy', value: csp },
-          // ── بقية الـ headers ─────────────────────────────────────────────
           { key: 'X-Frame-Options',          value: 'DENY' },
           { key: 'X-Content-Type-Options',   value: 'nosniff' },
           { key: 'X-XSS-Protection',         value: '1; mode=block' },

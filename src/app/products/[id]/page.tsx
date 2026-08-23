@@ -215,8 +215,8 @@ export default function ProductDetailPage() {
                 </div>
               )}
               {isVideo
-                ? <video key={activeMedia} src={activeMedia} controls autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <img key={activeMedia} src={activeMedia} alt={dress.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ? <video key={activeMedia} src={activeMedia} controls autoPlay loop muted playsInline crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <img key={activeMedia} src={activeMedia} alt={dress.name} crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               }
             </div>
 
@@ -236,7 +236,7 @@ export default function ProductDetailPage() {
                           <span style={{ fontSize: '10px', marginTop: '2px', fontWeight: 800 }}>فيديو</span>
                         </div>
                       ) : (
-                        <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={img} alt="" crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       )}
                     </button>
                   );

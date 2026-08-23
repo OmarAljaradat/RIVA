@@ -136,7 +136,8 @@ export default function ProductCardInsta({ product }: ProductCardProps) {
               loop 
               muted 
               playsInline
-              preload="auto"
+              preload="metadata"
+              crossOrigin="anonymous"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
             />
           ) : (
@@ -144,6 +145,13 @@ export default function ProductCardInsta({ product }: ProductCardProps) {
               key={displayMedia}
               src={displayMedia} 
               alt={product.name} 
+              crossOrigin="anonymous"
+              onError={(e) => {
+                const target = e.currentTarget as HTMLImageElement;
+                if (!target.src.includes('/hero-dress.jpg')) {
+                  target.src = '/hero-dress.jpg';
+                }
+              }}
               style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.2s ease' }} 
             />
           )}
