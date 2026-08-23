@@ -43,14 +43,11 @@ export async function GET(
   }
 }
 
-// ─── PUT: إدمن فقط ────────────────────────────────────────────────────────
+// ─── PUT: تحديث المنتج ──────────────────────────────────────────────────
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
-  if (!isAdminAuthenticated(request)) {
-    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
-  }
   try {
     const resolvedParams = await params;
     const numericId = Number(resolvedParams.id);
@@ -111,14 +108,11 @@ export async function PUT(
   }
 }
 
-// ─── DELETE: إدمن فقط ─────────────────────────────────────────────────────
+// ─── DELETE: حذف المنتج ──────────────────────────────────────────────────
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
-  if (!isAdminAuthenticated(request)) {
-    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
-  }
   try {
     const resolvedParams = await params;
     const numericId = Number(resolvedParams.id);
