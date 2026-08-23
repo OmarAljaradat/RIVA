@@ -48,9 +48,9 @@ export async function POST(request: NextRequest) {
     }
     writeStream.end();
 
-    await new Promise((resolve, reject) => {
-      writeStream.on('finish', resolve);
-      writeStream.on('error', reject);
+    await new Promise<void>((resolve, reject) => {
+      writeStream.on('finish', () => resolve());
+      writeStream.on('error', (err) => reject(err));
     });
 
     // Upload combined file to Catbox CDN
