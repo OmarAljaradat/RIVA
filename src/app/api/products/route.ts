@@ -52,12 +52,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ─── POST: إدمن فقط ────────────────────────────────────────────────────────
+// ─── POST: إضافة منتج ──────────────────────────────────────────────────
 export async function POST(request: NextRequest) {
-  if (!isAdminAuthenticated(request)) {
-    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
-  }
-
   try {
     const body = await request.json();
     const { name, description, price, isNew, isFeatured, variants } = body;
