@@ -8,15 +8,12 @@ export const revalidate = 0;
 const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/OmarAljaradat/RIVA/main/public/uploads';
 const LOCAL_UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 
-export async function GET(
-  req: NextRequest,
-  context: { params: Promise<{ filename: string }> | { filename: string } }
-) {
+export async function GET(req: NextRequest) {
   try {
-    const resolvedParams = await context.params;
-    const filename = resolvedParams?.filename;
+    const { searchParams } = new URL(req.url);
+    const filename = searchParams.get('file') || searchParams.get('f') || '';
 
-    if (!filename || filename.includes('..')) {
+    if (!filename || filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
       return new NextResponse('Invalid filename', { status: 400 });
     }
 
@@ -42,18 +39,17 @@ export async function GET(
       });
     }
 
-    // 2. Fetch from GitHub Raw with proper headers
+    // 2. Fetch from GitHub Raw
     const githubUrl = `${GITHUB_RAW_BASE}/${encodeURIComponent(filename)}`;
     const remoteRes = await fetch(githubUrl, {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36',
         'Accept': '*/*',
       },
     });
 
     if (!remoteRes.ok) {
-      console.error(`Media proxy error: ${remoteRes.status} for ${githubUrl}`);
-      return new NextResponse(`Media not found: ${remoteRes.status}`, { status: 404 });
+      return new NextResponse(`Media not found on CDN: ${remoteRes.status}`, { status: 404 });
     }
 
     const arrayBuffer = await remoteRes.arrayBuffer();
@@ -66,7 +62,6 @@ export async function GET(
       },
     });
   } catch (error: any) {
-    console.error('Media proxy exception:', error?.message);
     return new NextResponse('Internal Error', { status: 500 });
   }
 }
