@@ -1,152 +1,112 @@
-export interface ParsedDress {
-  name: string;
-  price: number;
-  variants: {
-    color: string;
-    colorHex: string;
-    size: string;
-    quantity: number;
-  }[];
+export interface ExtractedVariant {
+  color: string;
+  colorHex: string;
+  size: string;
+  quantity: number;
 }
 
-// Known color keywords to validate true colors
-const KNOWN_COLORS: Record<string, string> = {
-  'اسود': '#000000',
-  'أسود': '#000000',
-  'ابيض': '#FFFFFF',
-  'أبيض': '#FFFFFF',
-  'احمر': '#DC2626',
-  'أحمر': '#DC2626',
-  'ازرق': '#2563EB',
-  'أزرق': '#2563EB',
-  'كحلي': '#1E3A5F',
-  'اخضر': '#16A34A',
-  'أخضر': '#16A34A',
-  'وردي': '#EC4899',
-  'زهري': '#F472B6',
-  'بيج': '#D4B896',
-  'ذهبي': '#D4AF37',
-  'فضي': '#C0C0C0',
-  'بني': '#92400E',
-  'رمادي': '#6B7280',
-  'بنفسجي': '#7C3AED',
-  'موف': '#A855F7',
-  'برتقالي': '#EA580C',
-  'عنابي': '#800020',
-  'نبيتي': '#800020',
-  'خمري': '#722F37',
-  'تركواز': '#06B6D4',
-  'زيتي': '#556B2F',
-  'سماوي': '#87CEEB',
-  'كريمي': '#FFFDD0',
-  'نيلي': '#1D4ED8',
-  'نحاسي': '#B87333',
-  'عاجي': '#FFFFF0',
-  'اصفر': '#EAB308',
-  'أصفر': '#EAB308',
-  'بيبي بلو': '#89CFF0',
+export interface ExtractedDress {
+  name: string;
+  description: string;
+  price: number;
+  variants: ExtractedVariant[];
+}
+
+const KNOWN_COLORS = [
+  'بيبي بلو', 'سماوي', 'بني موكا', 'بني فاتح', 'اوف وايت', 'أوف وايت',
+  'اسود', 'أسود', 'ابيض', 'أبيض', 'خمري', 'زهري', 'وردي',
+  'اصفر', 'أصفر', 'بني', 'كحلي', 'زيتي', 'سومو', 'نهدي',
+  'عنابي', 'احمر', 'أحمر', 'بيج', 'ذهبي', 'فضي'
+];
+
+const COLOR_HEX_MAP: Record<string, string> = {
+  'اسود': '#000000', 'أسود': '#000000',
+  'ابيض': '#FFFFFF', 'أبيض': '#FFFFFF',
+  'خمري': '#722F37', 'عنابي': '#722F37',
+  'زهري': '#F472B6', 'وردي': '#F472B6',
+  'اصفر': '#FBBF24', 'أصفر': '#FBBF24',
+  'بيبي بلو': '#7DD3FC', 'سماوي': '#7DD3FC', 'ازرق': '#3B82F6',
+  'بني': '#78350F', 'بني موكا': '#92400E', 'بني فاتح': '#A16207', 'موكا': '#92400E',
+  'كحلي': '#1E3A8A', 'نيفي': '#1E3A8A',
+  'زيتي': '#4D7C0F', 'زيتوني': '#4D7C0F',
+  'سومو': '#FB923C', 'سلمون': '#FB923C',
+  'نهدي': '#A855F7', 'بنفسجي': '#A855F7', 'موف': '#A855F7',
+  'اوف وايت': '#FDFBF7', 'أوف وايت': '#FDFBF7',
+  'احمر': '#DC2626', 'أحمر': '#DC2626',
+  'ذهبي': '#D4AF37', 'فضي': '#94A3B8', 'بيج': '#D2B48C'
 };
 
-const COLOR_EMOJI_REGEX = /[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}🔴🔵⚫⚪🟣🟢🟡🟠🤎❤️💙🖤💚💛💜🤍🧡🩷]/gu;
+export function parseChannelPost(text: string): ExtractedDress | null {
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  if (lines.length === 0) return null;
 
-export function parseChannelPost(text: string): ParsedDress | null {
-  try {
-    if (!text || typeof text !== 'string') return null;
+  // 1. Extract Price (base + 8 JOD)
+  let basePrice = 25;
+  const priceMatch = text.match(/السعر\s*[:=]?\s*(\d+)/i) || text.match(/(\d+)\s*(?:jd|دينار)/i);
+  if (priceMatch) {
+    basePrice = parseInt(priceMatch[1], 10);
+  }
 
-    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-    if (lines.length === 0) return null;
+  // 2. Extract Name (Line 1 without emojis)
+  let name = lines[0].replace(/✨️|💫|🌷|🎗|💕|🍂|⭐|🌟/g, '').trim();
+  if (name.length < 5) name = 'موديل فاخر';
 
-    let name = '';
-    let price = 0;
-    const variants: ParsedDress['variants'] = [];
+  // 3. Extract Colors and exact Sizes per line
+  const variants: ExtractedVariant[] = [];
 
-    // 1. Extract Wholesale Cost Price and Apply Automatic Selling Price Rules (+8 / +9 JOD)
-    for (const line of lines) {
-      if (line.includes('السعر') || line.toLowerCase().includes('jd') || line.includes('دينار')) {
-        const numMatch = line.match(/(\d+(?:\.\d+)?)/);
-        if (numMatch) {
-          const wholesalePrice = parseFloat(numMatch[1]);
-          // Pricing Rule: cost < 26 => +9 JOD, cost >= 26 => +8 JOD
-          const margin = wholesalePrice < 26 ? 9 : 8;
-          price = wholesalePrice + margin;
-        }
-      }
-    }
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.includes('السعر') || line.includes('طول البليزر') || line.includes('طول البنطلون')) continue;
 
-    // 2. Extract Dress Name (First line)
-    for (const line of lines) {
-      if (line.includes('السعر') || line.toLowerCase().includes('jd')) continue;
-      if (/\d{2}/.test(line) && COLOR_EMOJI_REGEX.test(line)) continue;
-
-      const cleaned = line.replace(/^[✨🔹👗🌸⭐👑🖤❤️💙\s]+/, '').trim();
-      if (cleaned.length > 2) {
-        name = cleaned;
+    // Match color
+    let matchedColor: string | null = null;
+    for (const col of KNOWN_COLORS) {
+      if (line.includes(col)) {
+        matchedColor = col;
         break;
       }
     }
 
-    if (!name && lines[0]) {
-      name = lines[0].replace(/^[✨🔹👗🌸⭐👑\s]+/, '').trim();
-    }
+    if (matchedColor) {
+      let cleanColor = matchedColor;
+      if (cleanColor === 'أسود') cleanColor = 'اسود';
+      if (cleanColor === 'أبيض') cleanColor = 'ابيض';
+      if (cleanColor === 'أصفر') cleanColor = 'اصفر';
+      if (cleanColor === 'أوف وايت') cleanColor = 'اوف وايت';
+      if (cleanColor === 'أحمر') cleanColor = 'احمر';
+      if (cleanColor === 'وردي') cleanColor = 'زهري';
 
-    // 3. Extract STRICT Valid Colors & Sizes
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (line.includes('السعر') || line.toLowerCase().includes('jd')) continue;
+      const hex = COLOR_HEX_MAP[cleanColor] || '#722F37';
 
-      const cleanedLine = line.replace(/^[✨🔹👗🌸⭐👑🖤❤️💙\s]+/, '').trim();
-      if (cleanedLine === name) continue;
+      // Find sizes (numbers 34-56 or S, M, L, XL, XXL)
+      const sizeMatches = line.match(/\b(3[4-9]|4[0-9]|5[0-9])\b/g);
 
-      // Extract text part of the line
-      let colorText = line.replace(/\b(34|36|38|40|42|44|46|48|50|XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL)\b/gi, '')
-                          .replace(COLOR_EMOJI_REGEX, '')
-                          .replace(/[:\-•=]/g, '')
-                          .trim();
-
-      // Check if colorText contains ANY known color keyword
-      let matchedColorName: string | null = null;
-      let matchedColorHex = '#800020';
-
-      for (const [key, hex] of Object.entries(KNOWN_COLORS)) {
-        if (colorText.includes(key)) {
-          matchedColorName = key;
-          matchedColorHex = hex;
-          break;
-        }
-      }
-
-      // ONLY process if line contains a valid known color!
-      if (matchedColorName) {
-        const sizeMatches = line.match(/\b(34|36|38|40|42|44|46|48|50|XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL)\b/gi);
-        const isSoldOutLine = line.includes('خالص') || line.includes('منتهي') || line.includes('خلص') || line.includes('صفر');
-
-        if (sizeMatches && sizeMatches.length > 0 && !isSoldOutLine) {
-          for (const sizeStr of sizeMatches) {
-            variants.push({
-              color: matchedColorName,
-              colorHex: matchedColorHex,
-              size: sizeStr.toUpperCase(),
-              quantity: 5,
-            });
-          }
-        } else {
+      if (sizeMatches && sizeMatches.length > 0) {
+        const uniqueSizes = Array.from(new Set(sizeMatches));
+        for (const sz of uniqueSizes) {
           variants.push({
-            color: matchedColorName,
-            colorHex: matchedColorHex,
-            size: 'خالص (نفذت الكمية)',
-            quantity: 0,
+            color: cleanColor,
+            colorHex: hex,
+            size: sz,
+            quantity: 5 // Available
           });
         }
+      } else {
+        // Color is listed but has no sizes -> Out of stock
+        variants.push({
+          color: cleanColor,
+          colorHex: hex,
+          size: 'خالص',
+          quantity: 0
+        });
       }
     }
-
-    if (name && price > 0 && variants.length > 0) {
-      return { name, price, variants };
-    }
-
-    return null;
-  } catch (err) {
-    console.error('Error parsing channel post:', err);
-    return null;
   }
+
+  return {
+    name,
+    description: text,
+    price: basePrice + 8,
+    variants
+  };
 }
