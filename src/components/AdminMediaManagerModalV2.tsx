@@ -232,17 +232,20 @@ export default function AdminMediaManagerModalV2({ product, onClose, onUpdate }:
     setSaving(true);
     setSaveSuccess(false);
     try {
+      const currentUrls = mediaMap[activeColor] || [];
       const res = await fetch(`/api/products/${product.id}/media`, {
-        method: 'PUT',
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          color: activeColor,
+          imageUrls: currentUrls,
           mediaMap,
           sizeMap,
         }),
       });
 
-      if (!res.ok) {
-        const data = await res.json();
+      const data = await res.json();
+      if (!res.ok || data.error) {
         throw new Error(data.error || 'فشل حفظ التعديلات');
       }
 
@@ -252,7 +255,7 @@ export default function AdminMediaManagerModalV2({ product, onClose, onUpdate }:
         onClose();
       }, 700);
     } catch (err: any) {
-      alert(`خطأ: ${err.message}`);
+      alert(`خطأ في الحفظ: ${err.message}`);
     } finally {
       setSaving(false);
     }

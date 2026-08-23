@@ -250,76 +250,33 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
   const handleSaveAll = async () => {
     setSaving(true);
     try {
-      // 1. Order active color media: Photos FIRST, Videos SECOND (prevents website lag!)
       const activeUrls = mediaMap[activeColor] || [];
       const sortedActiveUrls = [
         ...activeUrls.filter(u => !isVideoUrl(u)),
         ...activeUrls.filter(u => isVideoUrl(u))
       ];
 
-      await fetch(`/api/products/${product.id}/media`, {
+      const res = await fetch(`/api/products/${product.id}/media`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ color: activeColor, imageUrls: sortedActiveUrls }),
-      });
-
-      // 2. Prepare full variants array for PUT /api/products/[id]
-      const updatedVariants: any[] = [];
-
-      colorGroups.forEach(g => {
-        const cSizes = sizeMap[g.color] || {};
-        const gUrls = mediaMap[g.color] || [];
-        const sortedGUrls = [
-          ...gUrls.filter(u => !isVideoUrl(u)),
-          ...gUrls.filter(u => isVideoUrl(u))
-        ];
-
-        let hasActive = false;
-        DEFAULT_SIZES.forEach(sz => {
-          if (cSizes[sz]) {
-            hasActive = true;
-            updatedVariants.push({
-              color: g.color,
-              colorHex: g.colorHex,
-              size: sz,
-              quantity: 5,
-              imageUrls: sortedGUrls,
-            });
-          }
-        });
-
-        if (!hasActive) {
-          updatedVariants.push({
-            color: g.color,
-            colorHex: g.colorHex,
-            size: 'خالص',
-            quantity: 0,
-            imageUrls: sortedGUrls,
-          });
-        }
-      });
-
-      const res = await fetch(`/api/products/${product.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          isNew: product.isNew,
-          isFeatured: product.isFeatured,
-          variants: updatedVariants,
+          color: activeColor,
+          imageUrls: sortedActiveUrls,
+          mediaMap,
+          sizeMap,
         }),
       });
 
-      if (res.ok) {
+      const data = await res.json();
+      if (res.ok && data.success) {
         alert(`تم حفظ صور وفيديوهات ومقاسات لون (${activeColor}) بنجاح! ✨`);
         triggerRefresh();
+        onClose();
       } else {
-        alert('حدث خطأ في حفظ التعديلات');
+        alert(`حدث خطأ: ${data.error || 'يرجى المحاولة مرة أخرى'}`);
       }
-    } catch (err) {
-      alert('حدث خطأ بالاتصال بالسيرفر');
+    } catch (err: any) {
+      alert(`حدث خطأ بالاتصال بالسيرفر: ${err.message}`);
     } finally {
       setSaving(false);
     }
