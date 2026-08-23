@@ -156,6 +156,15 @@ export default function ProductDetailPage() {
     g.isSoldOut = g.sizes.length === 0 || totalQty === 0;
     const realMedia = g.images.filter((url: string) => url !== '/uploads/dress1.jpg');
     if (realMedia.length > 0) g.images = realMedia;
+
+    // ترجيح الصور الثابتة أولاً ثم الفيديوهات لمنع بطء التصفح
+    g.images.sort((a, b) => {
+      const isVidA = a.endsWith('.mp4') || a.endsWith('.webm');
+      const isVidB = b.endsWith('.mp4') || b.endsWith('.webm');
+      if (isVidA && !isVidB) return 1;
+      if (!isVidA && isVidB) return -1;
+      return 0;
+    });
   });
 
   const selectedColor = colorGroups[selectedColorIndex] || colorGroups[0];
@@ -206,8 +215,8 @@ export default function ProductDetailPage() {
                 </div>
               )}
               {isVideo
-                ? <video src={activeMedia} controls autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <img src={activeMedia} alt={dress.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ? <video key={activeMedia} src={activeMedia} controls autoPlay loop muted playsInline style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <img key={activeMedia} src={activeMedia} alt={dress.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               }
             </div>
 
@@ -217,14 +226,18 @@ export default function ProductDetailPage() {
                   const isThumbVideo = img.endsWith('.mp4') || img.endsWith('.webm');
                   return (
                     <button key={idx} onClick={() => setActiveImageIndex(idx)} style={{
-                      width: '60px', height: '78px', borderRadius: '10px', overflow: 'hidden', flexShrink: 0,
-                      border: activeImageIndex === idx ? '3px solid var(--color-burgundy)' : '2px solid transparent',
-                      cursor: 'pointer', background: '#000', padding: 0
+                      width: '64px', height: '84px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0,
+                      border: activeImageIndex === idx ? '3px solid var(--color-burgundy)' : '2px solid #E5E7EB',
+                      cursor: 'pointer', background: '#000', padding: 0, position: 'relative'
                     }}>
-                      {isThumbVideo
-                        ? <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '18px' }}>🎥</div>
-                        : <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      }
+                      {isThumbVideo ? (
+                        <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: '#fff', background: 'linear-gradient(135deg, #1C0A10, #722F37)' }}>
+                          <span style={{ fontSize: '20px' }}>▶️</span>
+                          <span style={{ fontSize: '10px', marginTop: '2px', fontWeight: 800 }}>فيديو</span>
+                        </div>
+                      ) : (
+                        <img src={img} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      )}
                     </button>
                   );
                 })}
