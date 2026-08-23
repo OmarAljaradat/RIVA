@@ -159,8 +159,8 @@ export default function ProductDetailPage() {
 
     // ترجيح الصور الثابتة أولاً ثم الفيديوهات لمنع بطء التصفح
     g.images.sort((a, b) => {
-      const isVidA = a.endsWith('.mp4') || a.endsWith('.webm');
-      const isVidB = b.endsWith('.mp4') || b.endsWith('.webm');
+      const isVidA = a.includes('.mp4') || a.includes('.webm');
+      const isVidB = b.includes('.mp4') || b.includes('.webm');
       if (isVidA && !isVidB) return 1;
       if (!isVidA && isVidB) return -1;
       return 0;
@@ -173,7 +173,7 @@ export default function ProductDetailPage() {
     const anyRealMedia = colorGroups.flatMap(g => g.images).find(img => img && img !== '/uploads/dress1.jpg');
     activeMedia = anyRealMedia || '/uploads/dress_hero.jpg';
   }
-  const isVideo = activeMedia?.endsWith('.mp4') || activeMedia?.endsWith('.webm');
+  const isVideo = activeMedia?.includes('.mp4') || activeMedia?.includes('.webm');
   const selectedSizeInfo = selectedColor?.sizes.find(s => s.variantId === selectedVariantId);
   const colorIsSoldOut = selectedColor?.isSoldOut || (selectedSizeInfo && selectedSizeInfo.quantity <= 0);
 
