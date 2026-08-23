@@ -59,21 +59,19 @@ async function performTelegramSync() {
   let updatedCount = 0;
   const changesSummary: string[] = [];
 
-  for (let idx = 0; idx < textMessages.length; idx++) {
-    const tm = textMessages[idx];
+  for (const tm of textMessages) {
     const parsed = parseChannelPost(tm.text);
     if (!parsed) continue;
 
     const validColors = Array.from(new Set(parsed.variants.map(v => v.color.trim())));
 
-    // Find dress strictly by telegramMsgId
-    let dress = await prisma.dress.findFirst({
-      where: { telegramMsgId: tm.id },
-      include: { variants: true }
+    // Find dress strictly by unique telegramMsgId
+    const dress = await prisma.dress.findFirst({
+      where: { telegramMsgId: tm.id }
     });
 
     if (dress) {
-      // 1. Update Dress basic metadata
+      // 1. Update basic metadata
       await prisma.dress.update({
         where: { id: dress.id },
         data: {
@@ -83,7 +81,7 @@ async function performTelegramSync() {
         }
       });
 
-      // 2. CRITICAL PURGE: Delete all variants whose color is NOT in validColors
+      // 2. PURGE all variants that do NOT belong to this post's valid colors
       await prisma.dressVariant.deleteMany({
         where: {
           dressId: dress.id,
@@ -91,9 +89,14 @@ async function performTelegramSync() {
         }
       });
 
-      // 3. Update or create the valid variants
+      // 3. Fetch fresh variants after purge
+      const freshVariants = await prisma.dressVariant.findMany({
+        where: { dressId: dress.id }
+      });
+
+      // 4. Upsert/update valid sizes & quantities
       for (const pv of parsed.variants) {
-        const existing = dress.variants.find(
+        const existing = freshVariants.find(
           ev => ev.color.trim() === pv.color.trim() && ev.size.trim() === pv.size.trim()
         );
 
@@ -117,15 +120,15 @@ async function performTelegramSync() {
         }
       }
 
-      // 4. Zero-out any DB sizes not present in current post
-      for (const ev of dress.variants) {
-        if (validColors.includes(ev.color.trim())) {
-          const isStillAvailable = parsed.variants.some(
-            pv => pv.color.trim() === ev.color.trim() && pv.size.trim() === ev.size.trim() && pv.quantity > 0
+      // 5. Zero out any sizes not in current post
+      for (const fv of freshVariants) {
+        if (validColors.includes(fv.color.trim())) {
+          const isStillInPost = parsed.variants.some(
+            pv => pv.color.trim() === fv.color.trim() && pv.size.trim() === fv.size.trim() && pv.quantity > 0
           );
-          if (!isStillAvailable && ev.quantity > 0) {
+          if (!isStillInPost && fv.quantity > 0) {
             await prisma.dressVariant.update({
-              where: { id: ev.id },
+              where: { id: fv.id },
               data: { quantity: 0 }
             });
           }
