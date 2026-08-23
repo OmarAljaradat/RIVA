@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { TelegramClient } from 'telegram';
 import { StringSession } from 'telegram/sessions/index.js';
 import prisma from '@/lib/prisma';
-import { parseDressWithAi } from '@/lib/ai-parser';
+import { parseDressWithAi, parseDressExpert } from '@/lib/ai-parser';
+import { parseDressWithGemini } from '@/lib/gemini-parser';
 import fs from 'fs';
 import path from 'path';
 
@@ -130,7 +131,11 @@ async function performTelegramSync() {
 
     claimedMessageIds.add(bestMsgId); // حجز المنشور حصرياً لهذا الفستان
 
-    const matchedParsed = parseDressExpert(bestMsgText);
+    // استخدام الذكاء الاصطناعي Gemini AI للتحليل فائق الدقة
+    let matchedParsed = await parseDressWithGemini(bestMsgText);
+    if (!matchedParsed || matchedParsed.variants.length === 0) {
+      matchedParsed = parseDressExpert(bestMsgText);
+    }
     if (!matchedParsed || matchedParsed.variants.length === 0) continue;
 
     // Filter valid parsed variants with real sizes
