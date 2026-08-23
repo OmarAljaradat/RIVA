@@ -67,6 +67,7 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
   });
 
   const [uploadingType, setUploadingType] = useState<'photo' | 'video' | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
   const currentMediaList = mediaMap[activeColor] || [];
@@ -84,33 +85,76 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
     }));
   };
 
+  const uploadSingleFile = async (file: File): Promise<string | null> => {
+    const CHUNK_SIZE = 2.5 * 1024 * 1024; // 2.5MB per chunk (safely under Vercel's 4.5MB limit)
+    
+    if (file.size <= CHUNK_SIZE) {
+      // Small file -> Standard single request
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.url) return data.url;
+      throw new Error(data.error || 'فشل رفع الملف');
+    }
+
+    // Large file (e.g. video) -> Upload in chunks
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const uploadId = 'up_' + Date.now() + '_' + Math.random().toString(36).substring(2, 8);
+
+    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+      const start = chunkIndex * CHUNK_SIZE;
+      const end = Math.min(start + CHUNK_SIZE, file.size);
+      const chunkBlob = file.slice(start, end);
+
+      const formData = new FormData();
+      formData.append('chunk', chunkBlob, file.name);
+      formData.append('chunkIndex', chunkIndex.toString());
+      formData.append('totalChunks', totalChunks.toString());
+      formData.append('uploadId', uploadId);
+      formData.append('fileName', file.name);
+
+      setUploadProgress(Math.round(((chunkIndex + 1) / totalChunks) * 100));
+
+      const res = await fetch('/api/upload/chunk', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || `فشل رفع الجزء ${chunkIndex + 1}/${totalChunks}`);
+      }
+
+      if (data.url) {
+        return data.url;
+      }
+    }
+
+    return null;
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'photo' | 'video') => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     setUploadingType(type);
+    setUploadProgress(0);
     try {
       const newUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
-        const formData = new FormData();
-        formData.append('file', files[i]);
-
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-        const data = await res.json();
-        if (data.url) {
-          newUrls.push(data.url);
-        } else if (data.error) {
-          alert(`خطأ في رفع الملف: ${data.error}`);
+        const url = await uploadSingleFile(files[i]);
+        if (url) {
+          newUrls.push(url);
         }
       }
 
       if (newUrls.length > 0) {
         setMediaMap(prev => {
           const existing = prev[activeColor] || [];
-          // Keep photos first, videos second
           if (type === 'photo') {
             return {
               ...prev,
@@ -124,10 +168,11 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
           }
         });
       }
-    } catch (err) {
-      alert('حدث خطأ أثناء رفع الملف، يرجى المحاولة مرة أخرى');
+    } catch (err: any) {
+      alert(`حدث خطأ أثناء رفع الملف: ${err?.message || 'يرجى المحاولة مرة أخرى'}`);
     } finally {
       setUploadingType(null);
+      setUploadProgress(null);
       e.target.value = '';
     }
   };
@@ -298,7 +343,7 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <label className="btn-luxe-admin" style={{ cursor: 'pointer', margin: 0, fontSize: '12px', padding: '7px 14px', background: '#722F37' }}>
-                {uploadingType === 'photo' ? '⏳ جاري رفع الصورة...' : '🖼️ + رفع صورة من جهازك'}
+                {uploadingType === 'photo' ? (uploadProgress !== null ? `⏳ جاري رفع الصورة (${uploadProgress}%)...` : '⏳ جاري رفع الصورة...') : '🖼️ + رفع صورة من جهازك'}
                 <input
                   type="file"
                   accept="image/jpeg,image/png,image/webp"
@@ -364,7 +409,7 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <label className="btn-luxe-admin" style={{ cursor: 'pointer', margin: 0, fontSize: '12px', padding: '7px 14px', background: '#1E293B' }}>
-                {uploadingType === 'video' ? '⏳ جاري رفع الفيديو...' : '🎥 + رفع مقطع فيديو (MP4)'}
+                {uploadingType === 'video' ? (uploadProgress !== null ? `⏳ جاري رفع الفيديو (${uploadProgress}%)...` : '⏳ جاري رفع الفيديو...') : '🎥 + رفع مقطع فيديو (MP4)'}
                 <input
                   type="file"
                   accept="video/mp4,video/webm,video/quicktime"
