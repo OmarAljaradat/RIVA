@@ -69,6 +69,28 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
 
   const [uploadingType, setUploadingType] = useState<'photo' | 'video' | null>(null);
   const [saving, setSaving] = useState(false);
+  const [syncingTgMedia, setSyncingTgMedia] = useState(false);
+
+  const handleSyncTelegramMedia = async () => {
+    setSyncingTgMedia(true);
+    try {
+      const res = await fetch(`/api/products/${product.id}/sync-telegram-media`, {
+        method: 'POST'
+      });
+      const data = await res.json();
+      if (data.uploadedUrls && data.uploadedUrls.length > 0) {
+        alert(`تم جلب ${data.uploadedUrls.length} وسائط بنجاح من التيليجرام! ✨`);
+        triggerRefresh();
+        onClose();
+      } else {
+        alert(data.error || 'لم يتم العثور على وسائط مرتبطة في التيليجرام');
+      }
+    } catch (err) {
+      alert('حدث خطأ في الاتصال بالتيليجرام');
+    } finally {
+      setSyncingTgMedia(false);
+    }
+  };
 
   const currentMediaList = mediaMap[activeColor] || [];
   const currentPhotos = currentMediaList.filter(url => !isVideoUrl(url));
@@ -280,14 +302,25 @@ export default function AdminMediaManagerModal({ product, onClose, onRefresh, on
         <button className="modal-close-btn" onClick={onClose}>✕</button>
 
         {/* Modal Header */}
-        <div style={{ marginBottom: '18px', borderBottom: '1.5px solid #F3F4F6', paddingBottom: '14px' }}>
-          <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-rose-gold)', letterSpacing: '1px' }}>RIVA MEDIA & SIZES STUDIO</span>
-          <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#111827', margin: '4px 0 2px' }}>
-            🎨 إدارة صور وفيديوهات ومقاسات اللون: <span style={{ color: '#722F37' }}>({activeColor})</span>
-          </h2>
-          <p style={{ color: '#6B7280', fontSize: '13px', margin: 0 }}>
-            الفستان: <strong>{product.name}</strong> ({product.price} د.أ)
-          </p>
+        <div style={{ marginBottom: '18px', borderBottom: '1.5px solid #F3F4F6', paddingBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+          <div>
+            <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--color-rose-gold)', letterSpacing: '1px' }}>RIVA MEDIA & SIZES STUDIO</span>
+            <h2 style={{ fontSize: '20px', fontWeight: 900, color: '#111827', margin: '4px 0 2px' }}>
+              🎨 إدارة صور وفيديوهات ومقاسات اللون: <span style={{ color: '#722F37' }}>({activeColor})</span>
+            </h2>
+            <p style={{ color: '#6B7280', fontSize: '13px', margin: 0 }}>
+              الفستان: <strong>{product.name}</strong> ({product.price} د.أ)
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleSyncTelegramMedia}
+            disabled={syncingTgMedia}
+            className="btn-luxe-admin"
+            style={{ background: 'linear-gradient(135deg, #0088cc, #005f8f)', border: 'none', color: '#fff', fontSize: '13px', padding: '9px 16px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 4px 12px rgba(0,136,204,0.25)' }}
+          >
+            {syncingTgMedia ? '⏳ جاري سحب الوسائط من التيليجرام...' : '⚡ سحب صور وفيديوهات الفستان من تيليجرام'}
+          </button>
         </div>
 
         {/* Color Switcher Tabs */}
