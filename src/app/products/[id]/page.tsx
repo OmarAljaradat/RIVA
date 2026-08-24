@@ -400,7 +400,6 @@ export default function ProductDetailPage() {
           </div>
 
         </div>
-      </section>
 
         {/* ── RELATED DRESSES SECTION ── */}
 
