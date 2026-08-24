@@ -9,6 +9,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { calculateDeliveryEstimate } from '@/lib/delivery';
 import SizeCalculatorModal from '@/components/SizeCalculatorModal';
 import ProductCardInsta from '@/components/ProductCardInsta';
+import { generateCleanDressDescription } from '@/lib/dressDescription';
 
 
 interface Variant {
@@ -118,13 +119,8 @@ export default function ProductDetailPage() {
     );
   }
 
-  // Extract description from variant color if needed
-  let fullDressDescription = dress.description || '';
-  dress.variants.forEach(v => {
-    if (!fullDressDescription && v.color && v.color.length > 15) {
-      fullDressDescription = v.color;
-    }
-  });
+  // Generate clean luxury description (never showing supplier price, cost, or raw size lists)
+  const cleanDressDescription = generateCleanDressDescription(dress.name, dress.description);
 
   // Group variants by color
   const colorGroups: ColorGroup[] = [];
@@ -382,10 +378,29 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {fullDressDescription && (
-              <div style={{ background: '#FAF7F2', border: '1px solid rgba(212,175,55,0.25)', padding: '12px 14px', borderRadius: '14px', fontSize: '13px', color: '#374151', lineHeight: 1.7 }}>
-                <div style={{ fontWeight: 800, color: '#722F37', marginBottom: '4px', fontSize: '11px' }}>📝 تفاصيل الفستان:</div>
-                {fullDressDescription}
+            {cleanDressDescription && (
+              <div style={{
+                background: 'linear-gradient(135deg, #FAF7F2 0%, #FDFBF7 100%)',
+                border: '1px solid rgba(212,175,55,0.3)',
+                padding: '16px 18px',
+                borderRadius: '16px',
+                fontSize: '13px',
+                color: '#374151',
+                lineHeight: 1.75,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 900, color: '#722F37', marginBottom: '6px', fontSize: '12px' }}>
+                  <span>✨</span>
+                  <span>تفاصيل ومميزات الفستان:</span>
+                </div>
+                <div style={{ color: '#4B5563', fontSize: '13px', lineHeight: 1.8 }}>
+                  {cleanDressDescription}
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed rgba(212,175,55,0.3)', fontSize: '11px', fontWeight: 800, color: '#166534' }}>
+                  <span>🧵 خامات نخب أول فاخرة</span>
+                  <span>🪡 مبطن بالكامل</span>
+                  <span>🔍 معاينة وتجربة قبل الدفع</span>
+                </div>
               </div>
             )}
           </div>
