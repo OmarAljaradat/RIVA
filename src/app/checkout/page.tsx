@@ -65,6 +65,8 @@ function CheckoutContent() {
   const [deliveryType, setDeliveryType] = useState<'standard' | 'express'>('standard');
   const [preferredTimeSlot, setPreferredTimeSlot] = useState('أي وقت خلال اليوم (من 10:00 ص إلى 10:00 م)');
   const [agreedToPolicy, setAgreedToPolicy] = useState(false);
+  const [showExpressModal, setShowExpressModal] = useState(false);
+  const [agreedToNoInspection, setAgreedToNoInspection] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -106,10 +108,21 @@ function CheckoutContent() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     if (!agreedToPolicy) { alert('يرجى الموافقة على الشروط والسياسات أولاً'); return; }
+
+    // إذا اختارت الزبونة توصيل فوري، نفتح نافذة التأكيد الصريحة على عدم وجود معاينة
+    if (deliveryType === 'express' && !agreedToNoInspection) {
+      setShowExpressModal(true);
+      return;
+    }
+
+    executeOrder();
+  };
+
+  const executeOrder = async () => {
     setIsSubmitting(true);
     try {
       const insta = formData.instagram.startsWith('@') ? formData.instagram : `@${formData.instagram}`;
@@ -124,7 +137,7 @@ function CheckoutContent() {
           instagram: insta,
           notes: [
             `📸 انستقرام: ${insta}`,
-            deliveryType === 'express' ? '⚡ شحن فوري (بدون معاينة)' : '🚚 شحن عادي (مع معاينة)',
+            deliveryType === 'express' ? '⚡ شحن فوري (بدون معاينة وتجربة)' : '🚚 شحن عادي (مع معاينة وتجربة)',
             formData.city === 'عمان' ? `⏰ وقت: ${preferredTimeSlot}` : 'ℹ️ توصيل محافظات',
             formData.notes
           ].filter(Boolean).join(' | '),
@@ -193,7 +206,7 @@ function CheckoutContent() {
             <span style={{ color: '#fff', fontWeight: 900, fontSize: '16px' }}>معلومات التوصيل والدفع</span>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          <form onSubmit={handleFormSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
 
             {/* Row 1: Name + Phone */}
             <div className="checkout-row-2">
@@ -349,6 +362,143 @@ function CheckoutContent() {
           </form>
         </div>
       </div>
+
+      {/* ── EXPLAIN / CONFIRM NO INSPECTION MODAL FOR EXPRESS DELIVERY ── */}
+      {showExpressModal && (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 99999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px',
+        }}>
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: '24px',
+            maxWidth: '460px',
+            width: '100%',
+            padding: '28px 24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
+            border: '2px solid #F59E0B',
+            textAlign: 'center',
+            position: 'relative',
+          }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: '#FEF3C7',
+              color: '#D97706',
+              fontSize: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+            }}>
+              ⚡
+            </div>
+
+            <h3 style={{ fontSize: '20px', fontWeight: 900, color: '#1F2937', margin: '0 0 10px' }}>
+              تأكيد هام: خدمة التوصيل الفوري VIP
+            </h3>
+
+            <p style={{ fontSize: '14px', color: '#4B5563', lineHeight: 1.7, margin: '0 0 18px' }}>
+              خدمة <strong>الشحن الفوري</strong> مخصصة لتسليم الفستان لك بأقصى سرعة مع كابتن خاص، لذلك <strong style={{ color: '#DC2626' }}>لا تتوفر خدمة المعاينة أو تجربة القياس عند باب المنزل</strong> مع هذا الخيار.
+            </p>
+
+            {/* Checkbox */}
+            <div
+              onClick={() => setAgreedToNoInspection(!agreedToNoInspection)}
+              style={{
+                background: '#FFFBEB',
+                border: agreedToNoInspection ? '2px solid #D97706' : '1.5px solid #FDE68A',
+                borderRadius: '16px',
+                padding: '14px 16px',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '12px',
+                cursor: 'pointer',
+                textAlign: 'right',
+                marginBottom: '20px',
+                transition: 'all 0.2s',
+              }}
+            >
+              <div style={{
+                width: '22px',
+                height: '22px',
+                borderRadius: '6px',
+                flexShrink: 0,
+                marginTop: '1px',
+                background: agreedToNoInspection ? '#D97706' : '#fff',
+                border: agreedToNoInspection ? '2px solid #D97706' : '2px solid #D1D5DB',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#fff',
+                fontWeight: 900,
+                fontSize: '13px',
+              }}>
+                {agreedToNoInspection && '✓'}
+              </div>
+              <span style={{ fontSize: '13px', fontWeight: 800, color: '#92400E', lineHeight: 1.6 }}>
+                أقر وأوافق على أن التوصيل الفوري لا يشمل المعاينة أو التجربة عند الاستلام.
+              </span>
+            </div>
+
+            {/* Actions */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                type="button"
+                disabled={!agreedToNoInspection || isSubmitting}
+                onClick={() => {
+                  setShowExpressModal(false);
+                  executeOrder();
+                }}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '14px',
+                  border: 'none',
+                  background: agreedToNoInspection ? 'linear-gradient(135deg, #D97706 0%, #B45309 100%)' : '#E5E7EB',
+                  color: agreedToNoInspection ? '#fff' : '#9CA3AF',
+                  fontSize: '15px',
+                  fontWeight: 900,
+                  cursor: agreedToNoInspection ? 'pointer' : 'not-allowed',
+                  boxShadow: agreedToNoInspection ? '0 4px 14px rgba(217, 119, 6, 0.35)' : 'none',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {isSubmitting ? '⏳ جاري إرسال الطلب...' : 'تأكيد وإتمام الطلب الفوري ⚡'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setDeliveryType('standard');
+                  setShowExpressModal(false);
+                }}
+                style={{
+                  width: '100%',
+                  padding: '11px',
+                  borderRadius: '12px',
+                  border: '1px solid #E5E7EB',
+                  background: '#F9FAFB',
+                  color: '#4B5563',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                }}
+              >
+                🔄 التحويل لتوصيل عادي (مع معاينة وتجربة)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

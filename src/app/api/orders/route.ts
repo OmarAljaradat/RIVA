@@ -212,7 +212,7 @@ export async function POST(request: NextRequest) {
         include: {
           items: {
             include: {
-              dress: { select: { id: true, name: true, price: true } },
+              dress: { select: { id: true, name: true, nickname: true, price: true } },
               variant: { select: { id: true, color: true, colorHex: true, size: true } },
             }
           }
@@ -220,10 +220,12 @@ export async function POST(request: NextRequest) {
       });
     });
 
-    // إرسال إشعار التيليجرام بشكل غير متزامن
-    sendTelegramOrderNotification(order).catch(err => {
+    // إرسال إشعار التيليجرام بانتظار الإرسال لضمان عدم قطعه في بيئات Serverless
+    try {
+      await sendTelegramOrderNotification(order);
+    } catch (err) {
       console.error('Failed to send Telegram notification:', err);
-    });
+    }
 
     return NextResponse.json(order, { status: 201 });
   } catch {
