@@ -145,7 +145,7 @@ function OrderSuccessInner() {
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {order.items.map((item, idx) => {
-                const dressTitle = item.dress?.nickname?.trim() || item.dress?.name || 'فستان ريفا الأنيق';
+                const dressTitle = item.dress?.name || 'فستان ريفا الأنيق';
                 const color = item.variant?.color || '';
                 const size = item.variant?.size || '';
                 const imgUrl = item.variant?.images?.[0]?.url || '/uploads/dress1.jpg';

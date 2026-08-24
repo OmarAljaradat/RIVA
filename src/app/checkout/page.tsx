@@ -62,11 +62,11 @@ function CheckoutContent() {
   const [dress, setDress] = useState<DressData | null>(null);
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({ 
-    fullName: 'سارة أحمد', 
-    phone: '0791234567', 
+    fullName: '', 
+    phone: '', 
     city: 'عمان', 
-    address: 'خلدا - قرب سيتي مول', 
-    instagram: 'sara_ahmed', 
+    address: '', 
+    instagram: '', 
     notes: '' 
   });
   const [deliveryType, setDeliveryType] = useState<'standard' | 'express'>('standard');
@@ -85,36 +85,45 @@ function CheckoutContent() {
       .finally(() => setLoading(false));
   }, [dressId, variantId, router]);
 
-  // ─── Prefill Saved Customer Details (from localStorage or URL params) ───
+  // ─── Prefill Saved Customer Details (ignoring dummy test data) ───
   useEffect(() => {
     try {
+      const dummyValues = ['سارة أحمد', '0791234567', 'sara_ahmed', 'خلدا - قرب سيتي مول'];
+      const cleanVal = (val?: string | null) => {
+        if (!val || typeof val !== 'string') return '';
+        const trimmed = val.trim();
+        return dummyValues.includes(trimmed) ? '' : trimmed;
+      };
+
       const saved = localStorage.getItem('savedCustomer') || 
-                    localStorage.getItem('riva_customer_info') || 
-                    localStorage.getItem('customerData') || 
-                    localStorage.getItem('customer') || 
-                    localStorage.getItem('user_profile') ||
-                    localStorage.getItem('customerProfile') ||
-                    localStorage.getItem('user');
+                    localStorage.getItem('riva_customer_info');
       let initial: any = {};
       if (saved) {
         try { initial = JSON.parse(saved); } catch {}
       }
 
-      const paramName = searchParams.get('name') || searchParams.get('fullName') || searchParams.get('customerName') || searchParams.get('customer');
-      const paramPhone = searchParams.get('phone') || searchParams.get('phoneNumber') || searchParams.get('tel');
+      const paramName = searchParams.get('name') || searchParams.get('fullName') || searchParams.get('customerName');
+      const paramPhone = searchParams.get('phone') || searchParams.get('phoneNumber');
       const paramCity = searchParams.get('city');
       const paramAddress = searchParams.get('address') || searchParams.get('street');
-      const paramInsta = searchParams.get('instagram') || searchParams.get('insta') || searchParams.get('username');
+      const paramInsta = searchParams.get('instagram') || searchParams.get('insta');
       const paramNotes = searchParams.get('notes') || searchParams.get('deliveryNotes');
 
-      setFormData(prev => ({
-        fullName: paramName || initial.fullName || initial.name || initial.customerName || prev.fullName || 'سارة أحمد',
-        phone: paramPhone || initial.phone || initial.phoneNumber || prev.phone || '0791234567',
-        city: paramCity || initial.city || prev.city || 'عمان',
-        address: paramAddress || initial.address || initial.street || prev.address || 'خلدا - قرب سيتي مول',
-        instagram: paramInsta || initial.instagram || initial.insta || prev.instagram || 'sara_ahmed',
-        notes: paramNotes || initial.notes || initial.deliveryNotes || prev.notes,
-      }));
+      const resolvedName = cleanVal(paramName) || cleanVal(initial.fullName) || cleanVal(initial.name);
+      const resolvedPhone = cleanVal(paramPhone) || cleanVal(initial.phone);
+      const resolvedCity = paramCity || initial.city || 'عمان';
+      const resolvedAddress = cleanVal(paramAddress) || cleanVal(initial.address);
+      const resolvedInsta = cleanVal(paramInsta) || cleanVal(initial.instagram);
+      const resolvedNotes = cleanVal(paramNotes) || cleanVal(initial.notes);
+
+      setFormData({
+        fullName: resolvedName,
+        phone: resolvedPhone,
+        city: resolvedCity,
+        address: resolvedAddress,
+        instagram: resolvedInsta,
+        notes: resolvedNotes,
+      });
     } catch {}
   }, [searchParams]);
 
@@ -153,11 +162,20 @@ function CheckoutContent() {
       alert('الكمية المطلوبة غير متوفرة في المخزون');
       return false;
     }
-    if (!formData.fullName.trim()) e.fullName = 'الاسم مطلوب';
-    if (!formData.phone.trim()) e.phone = 'رقم الهاتف مطلوب';
-    else if (!/^07[0-9]{8}$/.test(formData.phone)) e.phone = 'يجب أن يبدأ بـ 07 ويكون 10 أرقام';
-    if (!formData.instagram.trim()) e.instagram = 'حساب الانستقرام مطلوب للتحقق';
-    if (!formData.address.trim()) e.address = 'المنطقة أو أقرب معلم مطلوب';
+    if (!formData.fullName.trim() || formData.fullName.trim().length < 2) {
+      e.fullName = 'الرجاء إدخال الاسم الكامل (حرفين على الأقل)';
+    }
+    if (!formData.phone.trim()) {
+      e.phone = 'الرجاء إدخال رقم الهاتف للتوصيل';
+    } else if (!/^07[0-9]{8}$/.test(formData.phone.trim())) {
+      e.phone = 'رقم الهاتف يجب أن يبدأ بـ 07 ويتكون من 10 أرقام';
+    }
+    if (!formData.instagram.trim() || formData.instagram.trim().length < 2) {
+      e.instagram = 'الرجاء إدخال يوزر الانستقرام لتأكيد الطلب';
+    }
+    if (!formData.address.trim() || formData.address.trim().length < 3) {
+      e.address = 'الرجاء إدخال العنوان بالتفصيل (المنطقة أو أقرب معلم)';
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
