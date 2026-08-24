@@ -252,18 +252,26 @@ function CheckoutContent() {
             <span style={{ color: '#fff', fontWeight: 900, fontSize: '16px' }}>معلومات التوصيل والدفع</span>
           </div>
 
-          <form onSubmit={handleFormSubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          <form onSubmit={handleFormSubmit} autoComplete="off" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '18px' }}>
 
             {/* Row 1: Name + Phone */}
             <div className="checkout-row-2">
               <Field label="الاسم الكامل *" error={errors.fullName}>
                 <input style={{ ...inputStyle, borderColor: errors.fullName ? '#EF4444' : '#E5E7EB' }}
-                  type="text" value={formData.fullName} onChange={e => set('fullName', e.target.value)}
+                  type="text"
+                  name="customer_full_name"
+                  autoComplete="off"
+                  value={formData.fullName}
+                  onChange={e => set('fullName', e.target.value)}
                   placeholder="أدخل اسمك الكامل هنا" />
               </Field>
               <Field label="رقم الهاتف *" error={errors.phone}>
                 <input style={{ ...inputStyle, borderColor: errors.phone ? '#EF4444' : '#E5E7EB' }}
-                  type="tel" value={formData.phone} onChange={e => set('phone', e.target.value)}
+                  type="tel"
+                  name="customer_phone_number"
+                  autoComplete="off"
+                  value={formData.phone}
+                  onChange={e => set('phone', e.target.value)}
                   placeholder="07XXXXXXXX" dir="ltr" />
               </Field>
             </div>
@@ -272,8 +280,11 @@ function CheckoutContent() {
             <div className="checkout-row-2">
               <Field label="حساب الانستقرام * (للتأكيد)" error={errors.instagram}>
                 <input style={{ ...inputStyle, borderColor: errors.instagram ? '#EF4444' : '#E5E7EB' }}
-                  type="text" value={formData.instagram} onChange={e => {
-                    // Strip @ if user types it
+                  type="text"
+                  name="customer_instagram_handle"
+                  autoComplete="off"
+                  value={formData.instagram}
+                  onChange={e => {
                     const val = e.target.value.replace(/^@+/, '');
                     set('instagram', val);
                   }}
@@ -293,7 +304,11 @@ function CheckoutContent() {
             {/* Address */}
             <Field label="المنطقة أو أقرب معلم *" error={errors.address}>
               <input style={{ ...inputStyle, borderColor: errors.address ? '#EF4444' : '#E5E7EB' }}
-                type="text" value={formData.address} onChange={e => set('address', e.target.value)}
+                type="text"
+                name="customer_delivery_address"
+                autoComplete="off"
+                value={formData.address}
+                onChange={e => set('address', e.target.value)}
                 placeholder="المنطقة، الشارع، أو أقرب معلم معروف" />
             </Field>
 
