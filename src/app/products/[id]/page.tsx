@@ -152,6 +152,14 @@ export default function ProductDetailPage() {
   });
 
   colorGroups.forEach(g => {
+    // ترتيب المقاسات تصاعدياً بدقة متناهية من الأصغر للأكبر (36 -> 38 -> 40 -> 42 -> 44 -> 46...)
+    g.sizes.sort((a, b) => {
+      const numA = parseInt(a.size.replace(/\D/g, ''), 10);
+      const numB = parseInt(b.size.replace(/\D/g, ''), 10);
+      if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+      return a.size.localeCompare(b.size);
+    });
+
     const totalQty = g.sizes.reduce((acc, curr) => acc + (curr.quantity > 0 ? curr.quantity : 0), 0);
     g.isSoldOut = g.sizes.length === 0 || totalQty === 0;
     const realMedia = g.images.filter((url: string) => url !== '/uploads/dress1.jpg');
@@ -174,13 +182,17 @@ export default function ProductDetailPage() {
     activeMedia = anyRealMedia || '/uploads/dress_hero.jpg';
   }
   const isVideo = activeMedia?.includes('.mp4') || activeMedia?.includes('.webm');
-  const selectedSizeInfo = selectedColor?.sizes.find(s => s.variantId === selectedVariantId);
+
+  // تحديد المقاس الفعّال (يبدأ دائماً بأصغر مقاس متوفر 36)
+  const currentSelectedSize = selectedColor?.sizes.find(s => s.variantId === selectedVariantId);
+  const effectiveVariantId = currentSelectedSize?.variantId || selectedColor?.sizes.find(s => s.quantity > 0)?.variantId || selectedColor?.sizes[0]?.variantId;
+  const selectedSizeInfo = selectedColor?.sizes.find(s => s.variantId === effectiveVariantId);
   const colorIsSoldOut = selectedColor?.isSoldOut || (selectedSizeInfo && selectedSizeInfo.quantity <= 0);
 
   const handleDirectOrder = () => {
     if (colorIsSoldOut) return;
-    if (!selectedVariantId) { alert('يرجى اختيار المقاس أولاً'); return; }
-    router.push(`/checkout?dressId=${dress.id}&variantId=${selectedVariantId}`);
+    if (!effectiveVariantId) { alert('يرجى اختيار المقاس أولاً'); return; }
+    router.push(`/checkout?dressId=${dress.id}&variantId=${effectiveVariantId}`);
   };
 
   return (
@@ -325,7 +337,7 @@ export default function ProductDetailPage() {
               ) : (
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   {selectedColor.sizes.map(sizeInfo => {
-                    const isSelected = selectedVariantId === sizeInfo.variantId;
+                    const isSelected = effectiveVariantId === sizeInfo.variantId;
                     const isSoldOut = sizeInfo.quantity === 0;
                     return (
                       <button key={sizeInfo.variantId}
