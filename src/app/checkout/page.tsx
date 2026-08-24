@@ -78,54 +78,23 @@ function CheckoutContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    // Clear any previous mock/cached customer data so the form is always 100% fresh and blank
+    try {
+      localStorage.removeItem('savedCustomer');
+      localStorage.removeItem('riva_customer_info');
+      localStorage.removeItem('customerData');
+      localStorage.removeItem('customer');
+      localStorage.removeItem('user_profile');
+      localStorage.removeItem('customerProfile');
+      localStorage.removeItem('user');
+    } catch {}
+
     if (!dressId || !variantId) { router.push('/products'); return; }
     fetch(`/api/products/${dressId}`)
       .then(r => r.json()).then(setDress)
       .catch(() => router.push('/products'))
       .finally(() => setLoading(false));
   }, [dressId, variantId, router]);
-
-  // ─── Prefill Saved Customer Details (ignoring dummy test data) ───
-  useEffect(() => {
-    try {
-      const dummyValues = ['سارة أحمد', '0791234567', 'sara_ahmed', 'خلدا - قرب سيتي مول'];
-      const cleanVal = (val?: string | null) => {
-        if (!val || typeof val !== 'string') return '';
-        const trimmed = val.trim();
-        return dummyValues.includes(trimmed) ? '' : trimmed;
-      };
-
-      const saved = localStorage.getItem('savedCustomer') || 
-                    localStorage.getItem('riva_customer_info');
-      let initial: any = {};
-      if (saved) {
-        try { initial = JSON.parse(saved); } catch {}
-      }
-
-      const paramName = searchParams.get('name') || searchParams.get('fullName') || searchParams.get('customerName');
-      const paramPhone = searchParams.get('phone') || searchParams.get('phoneNumber');
-      const paramCity = searchParams.get('city');
-      const paramAddress = searchParams.get('address') || searchParams.get('street');
-      const paramInsta = searchParams.get('instagram') || searchParams.get('insta');
-      const paramNotes = searchParams.get('notes') || searchParams.get('deliveryNotes');
-
-      const resolvedName = cleanVal(paramName) || cleanVal(initial.fullName) || cleanVal(initial.name);
-      const resolvedPhone = cleanVal(paramPhone) || cleanVal(initial.phone);
-      const resolvedCity = paramCity || initial.city || 'عمان';
-      const resolvedAddress = cleanVal(paramAddress) || cleanVal(initial.address);
-      const resolvedInsta = cleanVal(paramInsta) || cleanVal(initial.instagram);
-      const resolvedNotes = cleanVal(paramNotes) || cleanVal(initial.notes);
-
-      setFormData({
-        fullName: resolvedName,
-        phone: resolvedPhone,
-        city: resolvedCity,
-        address: resolvedAddress,
-        instagram: resolvedInsta,
-        notes: resolvedNotes,
-      });
-    } catch {}
-  }, [searchParams]);
 
   if (loading || !dress) return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '120px' }}>
@@ -146,14 +115,14 @@ function CheckoutContent() {
   const isVid = variantImage.endsWith('.mp4') || variantImage.endsWith('.webm');
 
   const set = (key: string, val: string) => {
-    setFormData(p => {
-      const updated = { ...p, [key]: val };
-      try {
-        localStorage.setItem('savedCustomer', JSON.stringify(updated));
-        localStorage.setItem('riva_customer_info', JSON.stringify(updated));
-      } catch {}
-      return updated;
-    });
+    setFormData(p => ({ ...p, [key]: val }));
+    if (errors[key]) {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
   };
 
   const validate = () => {
@@ -290,7 +259,7 @@ function CheckoutContent() {
               <Field label="الاسم الكامل *" error={errors.fullName}>
                 <input style={{ ...inputStyle, borderColor: errors.fullName ? '#EF4444' : '#E5E7EB' }}
                   type="text" value={formData.fullName} onChange={e => set('fullName', e.target.value)}
-                  placeholder="مثال: سارة أحمد" />
+                  placeholder="أدخل اسمك الكامل هنا" />
               </Field>
               <Field label="رقم الهاتف *" error={errors.phone}>
                 <input style={{ ...inputStyle, borderColor: errors.phone ? '#EF4444' : '#E5E7EB' }}
@@ -308,7 +277,7 @@ function CheckoutContent() {
                     const val = e.target.value.replace(/^@+/, '');
                     set('instagram', val);
                   }}
-                  placeholder="your.username" dir="ltr" />
+                  placeholder="أدخل يوزر حسابك على انستقرام" dir="ltr" />
                 <span style={{ fontSize: '11px', color: '#9CA3AF', marginTop: '4px', display: 'block' }}>
                   📩 سيتم تأكيد طلبك عبر الانستقرام
                 </span>
@@ -325,7 +294,7 @@ function CheckoutContent() {
             <Field label="المنطقة أو أقرب معلم *" error={errors.address}>
               <input style={{ ...inputStyle, borderColor: errors.address ? '#EF4444' : '#E5E7EB' }}
                 type="text" value={formData.address} onChange={e => set('address', e.target.value)}
-                placeholder="مثال: خلدا - قرب سيتي مول" />
+                placeholder="المنطقة، الشارع، أو أقرب معلم معروف" />
             </Field>
 
             {/* Delivery Type */}
