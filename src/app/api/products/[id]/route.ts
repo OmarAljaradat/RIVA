@@ -35,6 +35,15 @@ export async function GET(
       return NextResponse.json({ error: 'المنتج غير موجود' }, { status: 404 });
     }
 
+    if (product && Array.isArray(product.variants)) {
+      product.variants.sort((a: any, b: any) => {
+        const numA = parseInt(a.size.replace(/\D/g, ''), 10);
+        const numB = parseInt(b.size.replace(/\D/g, ''), 10);
+        if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+        return a.size.localeCompare(b.size);
+      });
+    }
+
     // لا نُرجع الـ nickname للزبون (معلومة داخلية)
     const { nickname: _nickname, ...publicProduct } = product as any;
     return NextResponse.json(publicProduct);

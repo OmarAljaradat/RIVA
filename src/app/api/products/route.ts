@@ -44,8 +44,18 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // لا نُرجع الـ nickname للزبائن (معلومة داخلية)
-    const safeProducts = products.map(({ nickname: _nickname, ...p }: any) => p);
+    // لا نُرجع الـ nickname للزبائن (معلومة داخلية) ونرتب المقاسات تصاعدياً
+    const safeProducts = products.map(({ nickname: _nickname, ...p }: any) => {
+      if (Array.isArray(p.variants)) {
+        p.variants.sort((a: any, b: any) => {
+          const numA = parseInt(a.size.replace(/\D/g, ''), 10);
+          const numB = parseInt(b.size.replace(/\D/g, ''), 10);
+          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
+          return a.size.localeCompare(b.size);
+        });
+      }
+      return p;
+    });
     return NextResponse.json(safeProducts);
   } catch {
     return NextResponse.json({ error: 'حدث خطأ في جلب المنتجات' }, { status: 500 });
