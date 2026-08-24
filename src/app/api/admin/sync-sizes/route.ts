@@ -57,6 +57,7 @@ async function performTelegramSync() {
   textMessages.sort((a, b) => a.date - b.date);
 
   let updatedCount = 0;
+  let newDressesCount = 0;
   const changesSummary: string[] = [];
 
   for (const tm of textMessages) {
@@ -65,23 +66,36 @@ async function performTelegramSync() {
 
     const validColors = Array.from(new Set(parsed.variants.map(v => v.color.trim())));
 
-    // Find dress strictly by unique telegramMsgId
-    const dress = await prisma.dress.findFirst({
-      where: { telegramMsgId: tm.id }
+    // Find dress strictly by unique telegramMsgId OR by exact name match
+    let dress = await prisma.dress.findFirst({
+      where: {
+        OR: [
+          { telegramMsgId: tm.id },
+          { name: parsed.name }
+        ]
+      }
     });
 
     if (dress) {
-      // 1. Update basic metadata
+      // 1. Update telegramMsgId if missing
+      if (!dress.telegramMsgId) {
+        await prisma.dress.update({
+          where: { id: dress.id },
+          data: { telegramMsgId: tm.id }
+        });
+      }
+
+      // 2. Update basic metadata
       await prisma.dress.update({
         where: { id: dress.id },
         data: {
           name: parsed.name,
           description: tm.text,
-          price: parsed.price,
+          price: parsed.price > 0 ? parsed.price : dress.price,
         }
       });
 
-      // 2. PURGE all variants that do NOT belong to this post's valid colors
+      // 3. PURGE all variants that do NOT belong to this post's valid colors
       await prisma.dressVariant.deleteMany({
         where: {
           dressId: dress.id,
@@ -89,12 +103,12 @@ async function performTelegramSync() {
         }
       });
 
-      // 3. Fetch fresh variants after purge
+      // 4. Fetch fresh variants after purge
       const freshVariants = await prisma.dressVariant.findMany({
         where: { dressId: dress.id }
       });
 
-      // 4. Upsert/update valid sizes & quantities
+      // 5. Upsert/update valid sizes & quantities
       for (const pv of parsed.variants) {
         const existing = freshVariants.find(
           ev => ev.color.trim() === pv.color.trim() && ev.size.trim() === pv.size.trim()
@@ -120,7 +134,7 @@ async function performTelegramSync() {
         }
       }
 
-      // 5. Zero out any sizes not in current post
+      // 6. Zero out any sizes not in current post
       for (const fv of freshVariants) {
         if (validColors.includes(fv.color.trim())) {
           const isStillInPost = parsed.variants.some(
@@ -136,7 +150,31 @@ async function performTelegramSync() {
       }
 
       updatedCount++;
-      changesSummary.push(`تمت مزامنة: "${parsed.name}" (${validColors.length} ألوان)`);
+      changesSummary.push(`تم تحديث: "${parsed.name}" (${validColors.length} ألوان)`);
+    } else {
+      // 7. CREATE BRAND NEW DRESS!
+      const newDress = await prisma.dress.create({
+        data: {
+          telegramMsgId: tm.id,
+          name: parsed.name,
+          description: tm.text,
+          price: parsed.price > 0 ? parsed.price : 30,
+          isNew: true,
+          isFeatured: true,
+          sortOrder: 0,
+          variants: {
+            create: parsed.variants.map(pv => ({
+              color: pv.color.trim(),
+              colorHex: pv.colorHex,
+              size: pv.size.trim(),
+              quantity: pv.quantity > 0 ? pv.quantity : 5,
+            }))
+          }
+        }
+      });
+
+      newDressesCount++;
+      changesSummary.push(`✨ فستان جديد تم سحبه وإضافته: "${parsed.name}"`);
     }
   }
 
@@ -146,6 +184,7 @@ async function performTelegramSync() {
     success: true,
     totalScannedDresses: textMessages.length,
     updatedCount,
+    newDressesCount,
     changesSummary,
     timestamp: new Date().toISOString()
   };

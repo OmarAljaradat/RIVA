@@ -104,7 +104,7 @@ export default function ProductsList() {
       const res = await fetch('/api/admin/sync-sizes', { method: 'POST' });
       const data = await res.json();
       if (data.success) {
-        alert(`✅ تم فحص ومطابقة المقاسات مع تيليجرام بنجاح!\n• إجمالي الفساتين المفحوصة: ${data.totalScannedDresses}\n• فساتين تم تحديث مخزونها: ${data.updatedDressesCount}`);
+        alert(`✅ تمت المزامنة الشاملة مع تيليجرام بنجاح!\n• فساتين جديدة تم سحبها: ${data.newDressesCount || 0}\n• فساتين تم تحديث مقاساتها ومخزونها: ${data.updatedCount || 0}\n• إجمالي المنشورات المفحوصة: ${data.totalScannedDresses}`);
         fetchProducts();
       } else {
         alert(`⚠️ تنبيه: ${data.error || 'فشلت المزامنة'}`);
@@ -223,7 +223,7 @@ export default function ProductsList() {
             }}
           >
             <span>{syncingSizes ? '⏳' : '🔄'}</span>
-            <span>{syncingSizes ? 'جاري المزامنة...' : 'مزامنة المقاسات مع تيليجرام'}</span>
+            <span>{syncingSizes ? 'جاري الفحص والسحب...' : 'سحب الفساتين الجديدة والمقاسات من تيليجرام'}</span>
           </button>
           <button 
             onClick={() => setShowAiModal(true)} 
