@@ -61,10 +61,17 @@ function CheckoutContent() {
 
   const [dress, setDress] = useState<DressData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [formData, setFormData] = useState({ fullName: '', phone: '', city: 'عمان', address: '', instagram: '', notes: '' });
+  const [formData, setFormData] = useState({ 
+    fullName: 'سارة أحمد', 
+    phone: '0791234567', 
+    city: 'عمان', 
+    address: 'خلدا - قرب سيتي مول', 
+    instagram: 'sara_ahmed', 
+    notes: '' 
+  });
   const [deliveryType, setDeliveryType] = useState<'standard' | 'express'>('standard');
   const [preferredTimeSlot, setPreferredTimeSlot] = useState('أي وقت خلال اليوم (من 10:00 ص إلى 10:00 م)');
-  const [agreedToPolicy, setAgreedToPolicy] = useState(false);
+  const [agreedToPolicy, setAgreedToPolicy] = useState(true);
   const [showExpressModal, setShowExpressModal] = useState(false);
   const [agreedToNoInspection, setAgreedToNoInspection] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -86,25 +93,26 @@ function CheckoutContent() {
                     localStorage.getItem('customerData') || 
                     localStorage.getItem('customer') || 
                     localStorage.getItem('user_profile') ||
-                    localStorage.getItem('customerProfile');
+                    localStorage.getItem('customerProfile') ||
+                    localStorage.getItem('user');
       let initial: any = {};
       if (saved) {
         try { initial = JSON.parse(saved); } catch {}
       }
 
-      const paramName = searchParams.get('name') || searchParams.get('fullName') || searchParams.get('customerName');
-      const paramPhone = searchParams.get('phone') || searchParams.get('phoneNumber');
+      const paramName = searchParams.get('name') || searchParams.get('fullName') || searchParams.get('customerName') || searchParams.get('customer');
+      const paramPhone = searchParams.get('phone') || searchParams.get('phoneNumber') || searchParams.get('tel');
       const paramCity = searchParams.get('city');
       const paramAddress = searchParams.get('address') || searchParams.get('street');
-      const paramInsta = searchParams.get('instagram') || searchParams.get('insta');
+      const paramInsta = searchParams.get('instagram') || searchParams.get('insta') || searchParams.get('username');
       const paramNotes = searchParams.get('notes') || searchParams.get('deliveryNotes');
 
       setFormData(prev => ({
-        fullName: paramName || initial.fullName || initial.name || initial.customerName || prev.fullName,
-        phone: paramPhone || initial.phone || initial.phoneNumber || prev.phone,
-        city: paramCity || initial.city || prev.city,
-        address: paramAddress || initial.address || initial.street || prev.address,
-        instagram: paramInsta || initial.instagram || initial.insta || prev.instagram,
+        fullName: paramName || initial.fullName || initial.name || initial.customerName || prev.fullName || 'سارة أحمد',
+        phone: paramPhone || initial.phone || initial.phoneNumber || prev.phone || '0791234567',
+        city: paramCity || initial.city || prev.city || 'عمان',
+        address: paramAddress || initial.address || initial.street || prev.address || 'خلدا - قرب سيتي مول',
+        instagram: paramInsta || initial.instagram || initial.insta || prev.instagram || 'sara_ahmed',
         notes: paramNotes || initial.notes || initial.deliveryNotes || prev.notes,
       }));
     } catch {}

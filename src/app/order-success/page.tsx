@@ -126,7 +126,7 @@ function OrderSuccessContent() {
           letterSpacing: '1.5px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.03)'
         }}>
-          {formatOrderNumber(orderId)}
+          رقم الطلب: {formatOrderNumber(orderId)}
         </div>
 
         {/* ── ORDERED ITEMS SUMMARY CARD (Item line details) ── */}
@@ -283,15 +283,13 @@ function OrderSuccessContent() {
           lineHeight: 1.7,
           fontWeight: 700,
         }}>
-          ✨ <span style={{ color: '#722F37', fontWeight: 900 }}>لتثبيت الطلب:</span> يرجى انتظار رسالة من المتجر عبر الانستقرام (<a href="https://www.instagram.com/riva.dress1/" target="_blank" rel="noopener noreferrer" style={{ color: '#E1306C', fontWeight: 900, textDecoration: 'underline' }} dir="ltr">@riva.dress1</a>) أو مراسلتنا مباشرة 📩
+          ✨ <span style={{ color: '#722F37', fontWeight: 900 }}>لتثبيت الطلب:</span> يرجى انتظار رسالة من المتجر عبر الانستقرام (<Link href="/instagram" style={{ color: '#E1306C', fontWeight: 900, textDecoration: 'underline' }} dir="ltr">@riva.dress1</Link>) أو مراسلتنا مباشرة 📩
         </div>
 
         {/* Action Buttons */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <a
-            href="https://www.instagram.com/riva.dress1/"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/instagram"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -311,7 +309,7 @@ function OrderSuccessContent() {
           >
             <span>📸</span>
             <span>متابعة حساب الإنستقرام (@riva.dress1)</span>
-          </a>
+          </Link>
 
           <Link href="/products" className="btn-luxe-admin" style={{ width: '100%', padding: '14px', justifyContent: 'center', fontSize: '15px', borderRadius: '14px' }}>
             👗 العودة لتصفح كولكشن الفساتين
