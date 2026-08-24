@@ -44,8 +44,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // لا نُرجع الـ nickname للزبائن (معلومة داخلية) ونرتب المقاسات تصاعدياً
-    const safeProducts = products.map(({ nickname: _nickname, ...p }: any) => {
+    // ترتيب المقاسات تصاعدياً
+    products.forEach((p: any) => {
       if (Array.isArray(p.variants)) {
         p.variants.sort((a: any, b: any) => {
           const numA = parseInt(a.size.replace(/\D/g, ''), 10);
@@ -54,9 +54,8 @@ export async function GET(request: NextRequest) {
           return a.size.localeCompare(b.size);
         });
       }
-      return p;
     });
-    return NextResponse.json(safeProducts);
+    return NextResponse.json(products);
   } catch {
     return NextResponse.json({ error: 'حدث خطأ في جلب المنتجات' }, { status: 500 });
   }
