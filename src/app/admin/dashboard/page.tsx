@@ -103,11 +103,12 @@ export default function Dashboard() {
   }
 
   // ── حسابات إجمالية ──────────────────────────────────────────────────────────
-  const nonCancelled = orders.filter(o => o.status !== 'cancelled');
-  const delivered    = orders.filter(o => o.status === 'delivered');
-  const pending      = orders.filter(o => o.status === 'pending');
+  // المبيعات والأرباح تُحسب فقط للطلبات المؤكدة أو المشحونة أو المسلّمة (وليس قيد الانتظار أو الملغاة)
+  const confirmedOrders = orders.filter(o => ['confirmed', 'shipped', 'delivered'].includes(o.status));
+  const delivered       = orders.filter(o => o.status === 'delivered');
+  const pending         = orders.filter(o => o.status === 'pending');
 
-  const totalRevenue = nonCancelled.reduce((s, o) => s + o.total, 0);
+  const totalRevenue = confirmedOrders.reduce((s, o) => s + o.total, 0);
   const netProfit    = delivered.reduce((acc, order) => {
     const p = (order.items || []).reduce((ia, item) => {
       const sell = item.price || 35;
@@ -129,8 +130,10 @@ export default function Dashboard() {
   orders.forEach(o => {
     const key = o.createdAt.split('T')[0];
     if (dailyMap[key] && o.status !== 'cancelled') {
-      dailyMap[key].مبيعات += o.total;
-      dailyMap[key].طلبات  += 1;
+      dailyMap[key].طلبات += 1;
+      if (['confirmed', 'shipped', 'delivered'].includes(o.status)) {
+        dailyMap[key].مبيعات += o.total;
+      }
       if (o.status === 'delivered') {
         const p = (o.items || []).reduce((ia, item) => {
           const sell = item.price || 35; const margin = sell < 26 ? 9 : 8;
@@ -166,8 +169,10 @@ export default function Dashboard() {
     const d = new Date(o.createdAt);
     const key = `${d.getFullYear()}-${d.getMonth()}`;
     if (!monthlyMap[key]) monthlyMap[key] = { month: MONTHS_AR[d.getMonth()], مبيعات: 0, طلبات: 0 };
-    monthlyMap[key].مبيعات += o.total;
-    monthlyMap[key].طلبات  += 1;
+    if (['confirmed', 'shipped', 'delivered'].includes(o.status)) {
+      monthlyMap[key].مبيعات += o.total;
+    }
+    monthlyMap[key].طلبات += 1;
   });
   const monthlyData = Object.values(monthlyMap).slice(-6);
 
@@ -186,7 +191,7 @@ export default function Dashboard() {
   // ── KPI Cards ────────────────────────────────────────────────────────────────
   const kpis = [
     { label: 'صافي الربح الحقيقي',  value: `${netProfit} د.أ`,    icon: '💵', bg: '#ECFDF5', border: GREEN,   color: GREEN   },
-    { label: 'إجمالي المبيعات',     value: `${Math.round(totalRevenue)} د.أ`, icon: '💰', bg: '#FFFBEB', border: GOLD,    color: BURGUNDY },
+    { label: 'إجمالي المبيعات المؤكدة', value: `${Math.round(totalRevenue)} د.أ`, icon: '💰', bg: '#FFFBEB', border: GOLD, color: BURGUNDY },
     { label: 'طلبات بالانتظار',     value: `${pending.length}`,   icon: '⏳', bg: '#FFFBEB', border: AMBER,   color: AMBER   },
     { label: 'طلبات مُسلَّمة',      value: `${delivered.length}`, icon: '🎉', bg: '#EFF6FF', border: BLUE,    color: BLUE    },
     { label: 'الموديلات بالكتالوج', value: `${products.length}`,  icon: '👗', bg: '#FAF5FF', border: '#7C3AED', color: '#7C3AED' },
