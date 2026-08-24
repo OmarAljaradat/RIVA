@@ -1,9 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { parseTelegramPost } from '@/lib/telegramParser';
+import { isAdminAuthenticated } from '@/lib/adminAuth';
 
 // POST: Parse Telegram raw posts text array into clean inspectable draft objects
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+  if (!(await isAdminAuthenticated(req))) {
+    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+  }
   try {
     const body = await req.json();
     const { posts } = body; // Array of { caption: string, imageUrls: string[] }
@@ -25,7 +29,10 @@ export async function POST(req: Request) {
 }
 
 // PUT: Bulk publish approved products to live database
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
+  if (!(await isAdminAuthenticated(req))) {
+    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+  }
   try {
     const body = await req.json();
     const { approvedProducts } = body;

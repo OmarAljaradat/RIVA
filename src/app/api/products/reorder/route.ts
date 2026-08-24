@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { isAdminAuthenticated } from '@/lib/adminAuth';
 
-export async function PUT(req: Request) {
+export async function PUT(req: NextRequest) {
+  if (!(await isAdminAuthenticated(req))) {
+    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+  }
   try {
     const body = await req.json();
     const { orderedIds } = body;

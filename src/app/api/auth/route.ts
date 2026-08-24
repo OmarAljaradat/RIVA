@@ -69,8 +69,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'بيانات غير صحيحة' }, { status: 400 });
     }
 
-    const expectedPassword = process.env.ADMIN_PASSWORD || 'riva2024admin';
-    if (password === expectedPassword || password === 'riva2024admin') {
+    const expectedPassword = process.env.ADMIN_PASSWORD;
+    if (!expectedPassword) {
+      console.error('ADMIN_PASSWORD environment variable is not set!');
+      return NextResponse.json({ error: 'خطأ في إعدادات الخادم' }, { status: 500 });
+    }
+    if (password === expectedPassword) {
       // ── نجح تسجيل الدخول — امسح المحاولات الفاشلة ──────────────────────
       clearLoginFailures(ip);
 

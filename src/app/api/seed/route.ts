@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 export async function POST() {
+  // ─── محظور تماماً في Production لحماية البيانات الحقيقية ─────────────
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json(
+      { error: 'هذه الوظيفة متاحة فقط في بيئة التطوير المحلية' },
+      { status: 403 }
+    );
+  }
   try {
     // Clean existing data
     await prisma.orderItem.deleteMany();

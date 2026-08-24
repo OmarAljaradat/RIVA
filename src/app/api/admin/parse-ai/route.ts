@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { parseDressWithAi } from '@/lib/ai-parser';
 import prisma from '@/lib/prisma';
+import { isAdminAuthenticated } from '@/lib/adminAuth';
 
 export async function POST(request: NextRequest) {
+  if (!(await isAdminAuthenticated(request))) {
+    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+  }
   try {
     const { text, autoSave } = await request.json();
 

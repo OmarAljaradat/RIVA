@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { sendTelegramOrderNotification } from '@/lib/telegramNotifier';
+import { isAdminAuthenticated } from '@/lib/adminAuth';
 
 // ─── Rate limiting بسيط في الذاكرة ───────────────────────────────────────
 const orderAttempts = new Map<string, { count: number; firstAttempt: number }>();
@@ -73,8 +74,11 @@ function validateMultiItemRules(
 
 
 
-// ─── GET: قائمة الطلبات (للإدمن فقط — محمية بـ middleware) ──────────────
+// ─── GET: قائمة الطلبات (للإدمن فقط — محمية بـ Auth) ──────────────────────
 export async function GET(request: NextRequest) {
+  if (!(await isAdminAuthenticated(request))) {
+    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+  }
   try {
     const orders = await prisma.order.findMany({
       include: {
@@ -177,14 +181,23 @@ export async function POST(request: NextRequest) {
     const total = itemsTotal + deliveryFee;
 
     const order = await prisma.$transaction(async (tx: any) => {
-      // تخفيض الكميات
+      // ─── تخفيض الكميات بشكل ذري (Atomic) لمنع Oversell ──────────────────
       for (const item of items) {
         const variantIdNum = Number(item.variantId);
-        const qtyNum = Number(item.quantity) || 1;
-        await tx.dressVariant.update({
-          where: { id: variantIdNum },
-          data: { quantity: { decrement: qtyNum } },
-        });
+        const qtyNum       = Number(item.quantity) || 1;
+
+        // UPDATE الذري: يُنقص الكمية فقط إذا كانت ≥ الكمية المطلوبة
+        const updated: any[] = await tx.$queryRaw`
+          UPDATE "DressVariant"
+          SET    quantity = quantity - ${qtyNum}
+          WHERE  id       = ${variantIdNum}
+            AND  quantity >= ${qtyNum}
+          RETURNING id, quantity
+        `;
+
+        if (!updated || updated.length === 0) {
+          throw new Error(`المقاس المحدد نفد من المخزون أثناء معالجة طلبك — يرجى تحديث الصفحة والمحاولة مجدداً`);
+        }
       }
 
       // إنشاء الطلب بالسعر الحقيقي من DB

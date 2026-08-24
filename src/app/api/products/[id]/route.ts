@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { isAdminAuthenticated } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-// ─── Helper: التحقق من session الإدمن ─────────────────────────────────────
-function isAdminAuthenticated(request: NextRequest): boolean {
-  const sessionToken = request.cookies.get('riva_admin_session')?.value;
-  if (!sessionToken) return false;
-  const password = process.env.ADMIN_PASSWORD || '';
-  const salt = 'riva_boutique_2026';
-  const expectedToken = Buffer.from(`${salt}:${password}`).toString('base64');
-  return sessionToken === expectedToken;
-}
 
 // ─── GET: عام — يُستخدم من صفحات المنتج للزبائن ─────────────────────────
 export async function GET(
@@ -50,11 +41,14 @@ export async function GET(
   }
 }
 
-// ─── PUT: تحديث المنتج ──────────────────────────────────────────────────
+// ─── PUT: تحديث المنتج (إدمن فقط) ──────────────────────────────────────────
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
+  if (!(await isAdminAuthenticated(request))) {
+    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+  }
   try {
     const resolvedParams = await params;
     const numericId = Number(resolvedParams.id);
@@ -115,11 +109,14 @@ export async function PUT(
   }
 }
 
-// ─── DELETE: حذف المنتج ──────────────────────────────────────────────────
+// ─── DELETE: حذف المنتج (إدمن فقط) ──────────────────────────────────────────
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
+  if (!(await isAdminAuthenticated(request))) {
+    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+  }
   try {
     const resolvedParams = await params;
     const numericId = Number(resolvedParams.id);

@@ -1,18 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
+import { isAdminAuthenticated } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-// ─── Helper: التحقق من session الإدمن ─────────────────────────────────────
-function isAdminAuthenticated(request: NextRequest): boolean {
-  const sessionToken = request.cookies.get('riva_admin_session')?.value;
-  if (!sessionToken) return false;
-  const password = process.env.ADMIN_PASSWORD || '';
-  const salt = 'riva_boutique_2026';
-  const expectedToken = Buffer.from(`${salt}:${password}`).toString('base64');
-  return sessionToken === expectedToken;
-}
 
 // ─── GET: عام — يُستخدم من صفحة المتجر ─────────────────────────────────
 export async function GET(request: NextRequest) {
@@ -61,8 +52,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ─── POST: إضافة منتج ──────────────────────────────────────────────────
+// ─── POST: إضافة منتج (إدمن فقط) ──────────────────────────────────────────
 export async function POST(request: NextRequest) {
+  if (!(await isAdminAuthenticated(request))) {
+    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+  }
   try {
     const body = await request.json();
     const { name, description, price, isNew, isFeatured, variants } = body;

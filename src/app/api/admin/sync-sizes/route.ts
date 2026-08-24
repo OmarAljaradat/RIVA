@@ -3,14 +3,17 @@ import { TelegramClient } from 'telegram';
 import { StringSession } from 'telegram/sessions/index.js';
 import prisma from '@/lib/prisma';
 import { parseChannelPost } from '@/lib/telegram';
+import { cookies } from 'next/headers';
+import { verifySessionToken } from '@/lib/sessionToken';
 import fs from 'fs';
 import path from 'path';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
-const apiId = 34081063;
-const apiHash = '018dc673429227e26a1b8d9d65eb76ca';
+// ─── Telegram MTProto credentials من Environment Variables فقط ───────────
+const apiId   = Number(process.env.TELEGRAM_API_ID   || '0');
+const apiHash = process.env.TELEGRAM_API_HASH         || '';
 
 async function performTelegramSync() {
   let stringSession = process.env.TELEGRAM_USER_SESSION || '';
@@ -190,7 +193,20 @@ async function performTelegramSync() {
   };
 }
 
+// ─── Auth Helper ─────────────────────────────────────────────────────────────
+async function requireAdmin(): Promise<boolean> {
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get('riva_admin_session')?.value;
+    if (!token) return false;
+    return await verifySessionToken(token);
+  } catch { return false; }
+}
+
 export async function GET(req: NextRequest) {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+  }
   try {
     const result = await performTelegramSync();
     return NextResponse.json(result);
@@ -200,6 +216,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+  }
   try {
     const result = await performTelegramSync();
     return NextResponse.json(result);

@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
 
-const BOT_TOKEN = '8647389861:AAG4JGyAQYu4FD6IcX1NVa3wV6HACaoQo0U';
-const CHAT_ID = '1965859902';
+// ─── Telegram credentials من Environment Variables فقط ────────────────────
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const CHAT_ID   = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID;
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +18,7 @@ export async function POST(request: NextRequest) {
     const isVideo = file.type?.includes('video') || file.name?.endsWith('.mp4') || file.name?.endsWith('.mov');
 
     // 1. Try Telegram Bot Storage
+    if (BOT_TOKEN && CHAT_ID) {
     try {
       const endpoint = isVideo ? 'sendVideo' : 'sendPhoto';
       const tgFormData = new FormData();
@@ -46,6 +48,7 @@ export async function POST(request: NextRequest) {
     } catch (tgErr) {
       console.warn('Telegram bot upload failed, trying Catbox...', tgErr);
     }
+    } // end if (BOT_TOKEN && CHAT_ID)
 
     // 2. Try Catbox
     try {
