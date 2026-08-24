@@ -396,11 +396,6 @@ export default function ProductDetailPage() {
                 <div style={{ color: '#4B5563', fontSize: '13px', lineHeight: 1.8 }}>
                   {cleanDressDescription}
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginTop: '12px', paddingTop: '10px', borderTop: '1px dashed rgba(212,175,55,0.3)', fontSize: '11px', fontWeight: 800, color: '#166534' }}>
-                  <span>🧵 خامات نخب أول فاخرة</span>
-                  <span>🪡 مبطن بالكامل</span>
-                  <span>🔍 معاينة وتجربة قبل الدفع</span>
-                </div>
               </div>
             )}
           </div>
