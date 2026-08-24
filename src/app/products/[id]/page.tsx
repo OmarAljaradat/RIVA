@@ -243,24 +243,15 @@ export default function ProductDetailPage() {
 
           {/* ── 2. VIDEO & PHOTO FRAME ── */}
           <div style={{ marginBottom: '16px' }}>
-            <div style={{
-              width: '100%',
-              borderRadius: '20px',
-              overflow: 'hidden',
-              background: '#0F172A',
-              position: 'relative',
-              aspectRatio: '3/4',
-              maxHeight: '480px',
-              margin: '0 auto'
-            }}>
+            <div className="product-detail-media-frame">
               {colorIsSoldOut && (
                 <div style={{ position: 'absolute', top: '12px', right: '12px', zIndex: 10, background: '#EF4444', color: '#fff', padding: '5px 12px', borderRadius: '20px', fontWeight: 800, fontSize: '12px' }}>
                   🔴 خالص
                 </div>
               )}
               {isVideo
-                ? <video key={activeMedia} src={activeMedia} controls autoPlay loop muted playsInline crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <img key={activeMedia} src={activeMedia} alt={dress.name} crossOrigin="anonymous" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ? <video key={activeMedia} src={activeMedia} controls autoPlay loop muted playsInline crossOrigin="anonymous" className="product-detail-media-elem" />
+                : <img key={activeMedia} src={activeMedia} alt={dress.name} crossOrigin="anonymous" className="product-detail-media-elem" />
               }
             </div>
 
