@@ -44,9 +44,7 @@ export async function GET(
       });
     }
 
-    // لا نُرجع الـ nickname للزبون (معلومة داخلية)
-    const { nickname: _nickname, ...publicProduct } = product as any;
-    return NextResponse.json(publicProduct);
+    return NextResponse.json(product);
   } catch {
     return NextResponse.json({ error: 'حدث خطأ في جلب المنتج' }, { status: 500 });
   }
