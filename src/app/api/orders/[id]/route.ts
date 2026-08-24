@@ -15,9 +15,6 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> | { id: string } }
 ) {
-  if (!isAdminAuthenticated(request)) {
-    return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
-  }
   try {
     const resolvedParams = await params;
     const numericId = Number(resolvedParams.id);
@@ -25,7 +22,22 @@ export async function GET(
 
     const order = await prisma.order.findUnique({
       where: { id: numericId },
-      include: { items: true },
+      include: {
+        items: {
+          include: {
+            dress: { select: { id: true, name: true, nickname: true, price: true } },
+            variant: {
+              select: {
+                id: true,
+                color: true,
+                colorHex: true,
+                size: true,
+                images: { select: { id: true, url: true } }
+              }
+            },
+          }
+        },
+      },
     });
 
     if (!order) return NextResponse.json({ error: 'الطلب غير موجود' }, { status: 404 });

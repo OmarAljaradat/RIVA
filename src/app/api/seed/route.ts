@@ -127,7 +127,7 @@ export async function POST() {
               color: col.name,
               colorHex: col.hex,
               size: sz,
-              quantity: 5
+              quantity: 50
             }
           });
 

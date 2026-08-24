@@ -78,6 +78,38 @@ function CheckoutContent() {
       .finally(() => setLoading(false));
   }, [dressId, variantId, router]);
 
+  // ─── Prefill Saved Customer Details (from localStorage or URL params) ───
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('savedCustomer') || 
+                    localStorage.getItem('riva_customer_info') || 
+                    localStorage.getItem('customerData') || 
+                    localStorage.getItem('customer') || 
+                    localStorage.getItem('user_profile') ||
+                    localStorage.getItem('customerProfile');
+      let initial: any = {};
+      if (saved) {
+        try { initial = JSON.parse(saved); } catch {}
+      }
+
+      const paramName = searchParams.get('name') || searchParams.get('fullName') || searchParams.get('customerName');
+      const paramPhone = searchParams.get('phone') || searchParams.get('phoneNumber');
+      const paramCity = searchParams.get('city');
+      const paramAddress = searchParams.get('address') || searchParams.get('street');
+      const paramInsta = searchParams.get('instagram') || searchParams.get('insta');
+      const paramNotes = searchParams.get('notes') || searchParams.get('deliveryNotes');
+
+      setFormData(prev => ({
+        fullName: paramName || initial.fullName || initial.name || initial.customerName || prev.fullName,
+        phone: paramPhone || initial.phone || initial.phoneNumber || prev.phone,
+        city: paramCity || initial.city || prev.city,
+        address: paramAddress || initial.address || initial.street || prev.address,
+        instagram: paramInsta || initial.instagram || initial.insta || prev.instagram,
+        notes: paramNotes || initial.notes || initial.deliveryNotes || prev.notes,
+      }));
+    } catch {}
+  }, [searchParams]);
+
   if (loading || !dress) return (
     <div style={{ display: 'flex', justifyContent: 'center', padding: '120px' }}>
       <div className="spinner" />
@@ -87,6 +119,7 @@ function CheckoutContent() {
   const selectedVariant = dress.variants.find(v => v.id === Number(variantId));
   if (!selectedVariant) { router.push('/products'); return null; }
 
+  const isOutOfStock = selectedVariant.quantity <= 0;
   const deliveryCost = deliveryType === 'express' ? (formData.city !== 'عمان' ? 5 : 3) : 3;
   const total = dress.price + deliveryCost;
 
@@ -95,10 +128,23 @@ function CheckoutContent() {
   const variantImage = realMedia[0] || allImgs[0] || '/uploads/dress1.jpg';
   const isVid = variantImage.endsWith('.mp4') || variantImage.endsWith('.webm');
 
-  const set = (key: string, val: string) => setFormData(p => ({ ...p, [key]: val }));
+  const set = (key: string, val: string) => {
+    setFormData(p => {
+      const updated = { ...p, [key]: val };
+      try {
+        localStorage.setItem('savedCustomer', JSON.stringify(updated));
+        localStorage.setItem('riva_customer_info', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
 
   const validate = () => {
     const e: Record<string, string> = {};
+    if (isOutOfStock) {
+      alert('الكمية المطلوبة غير متوفرة في المخزون');
+      return false;
+    }
     if (!formData.fullName.trim()) e.fullName = 'الاسم مطلوب';
     if (!formData.phone.trim()) e.phone = 'رقم الهاتف مطلوب';
     else if (!/^07[0-9]{8}$/.test(formData.phone)) e.phone = 'يجب أن يبدأ بـ 07 ويكون 10 أرقام';
@@ -125,6 +171,11 @@ function CheckoutContent() {
   const executeOrder = async () => {
     setIsSubmitting(true);
     try {
+      try {
+        localStorage.setItem('savedCustomer', JSON.stringify(formData));
+        localStorage.setItem('riva_customer_info', JSON.stringify(formData));
+      } catch {}
+
       const insta = formData.instagram.startsWith('@') ? formData.instagram : `@${formData.instagram}`;
       const res = await fetch('/api/orders', {
         method: 'POST',
