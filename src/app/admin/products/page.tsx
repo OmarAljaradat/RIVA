@@ -29,8 +29,12 @@ function NicknameEditor({ productId, initialNickname, onSaved }: {
   onSaved: (nickname: string) => void;
 }) {
   const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(initialNickname);
+  const [value, setValue] = useState(initialNickname || '');
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setValue(initialNickname || '');
+  }, [initialNickname]);
 
   const save = async () => {
     setSaving(true);
@@ -117,7 +121,7 @@ export default function ProductsList() {
   };
 
   const fetchProducts = () => {
-    fetch('/api/products')
+    fetch('/api/products?t=' + Date.now(), { cache: 'no-store' })
       .then(r => r.json())
       .then(data => setProducts(Array.isArray(data) ? data : []))
       .catch(console.error)
