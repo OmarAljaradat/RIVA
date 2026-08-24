@@ -71,7 +71,7 @@ function CheckoutContent() {
   });
   const [deliveryType, setDeliveryType] = useState<'standard' | 'express'>('standard');
   const [preferredTimeSlot, setPreferredTimeSlot] = useState('أي وقت خلال اليوم (من 10:00 ص إلى 10:00 م)');
-  const [agreedToPolicy, setAgreedToPolicy] = useState(true);
+  const [agreedToPolicy, setAgreedToPolicy] = useState(false);
   const [showExpressModal, setShowExpressModal] = useState(false);
   const [agreedToNoInspection, setAgreedToNoInspection] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
