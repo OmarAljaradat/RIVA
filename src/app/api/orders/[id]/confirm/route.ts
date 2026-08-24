@@ -36,6 +36,7 @@ export async function GET(
     const isExpress = order.notes?.includes('شحن فوري');
     const expressSuffix = isExpress ? ' (فوري)' : '';
     const locationStr = order.city === 'عمان' ? order.address : `${order.city} - ${order.address}`;
+    const orderCode = formatOrderNumber(order.id);
 
     // 3. Build WhatsApp pre-filled message (Exact Template)
     const whatsAppMessage = `الاسم: ${order.customerName}
