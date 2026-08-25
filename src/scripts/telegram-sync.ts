@@ -153,9 +153,33 @@ async function main() {
   console.log(`   📦 فساتين محدّثة: ${updatedCount}`);
   console.log(`   ✨ فساتين جديدة: ${newDressesCount}`);
   console.log(`   🕐 وقت المزامنة: ${new Date().toISOString()}`);
+
+  // إرسال إشعار تيليجرام للمالكة
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId   = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  if (botToken && chatId) {
+    const jorTime = new Date().toLocaleString('ar-JO', { timeZone: 'Asia/Amman', hour: '2-digit', minute: '2-digit' });
+    const msg = updatedCount === 0 && newDressesCount === 0
+      ? `🔄 <b>مزامنة تلقائية — ريفا</b>\n✅ لا يوجد تغييرات جديدة\n🕐 ${jorTime}`
+      : `🔄 <b>مزامنة تلقائية — ريفا</b>\n📦 محدّث: ${updatedCount} فستان\n✨ جديد: ${newDressesCount} فستان\n🕐 ${jorTime}`;
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: msg, parse_mode: 'HTML' }),
+    });
+  }
 }
 
-main().catch(err => {
+main().catch(async err => {
   console.error('❌ خطأ في المزامنة:', err);
+  const botToken = process.env.TELEGRAM_BOT_TOKEN;
+  const chatId   = process.env.TELEGRAM_ADMIN_CHAT_ID;
+  if (botToken && chatId) {
+    await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: `❌ <b>فشل المزامنة التلقائية — ريفا</b>\n<code>${err.message}</code>`, parse_mode: 'HTML' }),
+    });
+  }
   process.exit(1);
 });
