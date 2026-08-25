@@ -6,9 +6,11 @@
 import { TelegramClient } from 'telegram';
 import { StringSession } from 'telegram/sessions/index.js';
 import { PrismaClient } from '../generated/prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { parseChannelPost } from '../lib/telegram';
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg(process.env.DATABASE_URL!);
+const prisma = new PrismaClient({ adapter } as any);
 
 const apiId   = Number(process.env.TELEGRAM_API_ID || '0');
 const apiHash = process.env.TELEGRAM_API_HASH || '';
