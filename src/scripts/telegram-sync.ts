@@ -5,7 +5,7 @@
 
 import { TelegramClient } from 'telegram';
 import { StringSession } from 'telegram/sessions/index.js';
-import { PrismaClient } from '../generated/prisma';
+import { PrismaClient } from '../generated/prisma/index.js';
 import { parseChannelPost } from '../lib/telegram';
 
 const prisma = new PrismaClient();

@@ -2,7 +2,7 @@ name: 🔄 Telegram Auto Sync
 
 on:
   schedule:
-    # كل نص ساعة (*/30 * * * *)
+    # كل نص ساعة
     - cron: '*/30 * * * *'
   # تشغيل يدوي عند الحاجة من GitHub
   workflow_dispatch:
@@ -31,11 +31,14 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      - name: 🔍 فحص مسار Prisma
+        run: ls src/generated/prisma/ | head -5
+
       - name: 📦 تثبيت tsx للتشغيل
         run: npm install -g tsx
 
       - name: 🔄 تشغيل المزامنة مع التيليجرام
-        run: tsx --tsconfig tsconfig.scripts.json src/scripts/telegram-sync.ts
+        run: tsx src/scripts/telegram-sync.ts
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
