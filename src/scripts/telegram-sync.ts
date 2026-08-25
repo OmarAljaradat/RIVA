@@ -167,19 +167,25 @@ async function main() {
 
     const validColors = Array.from(new Set(parsed.variants.map(v => v.color.trim())));
 
-    const dress = await prisma.dress.findFirst({
+    let dress = await prisma.dress.findFirst({
       where: {
-        OR: [
-          { telegramMsgId: tm.id },
-          { name: parsed.name }
-        ]
+        telegramMsgId: tm.id
       }
     });
+
+    if (!dress) {
+      dress = await prisma.dress.findFirst({
+        where: {
+          telegramMsgId: null,
+          name: parsed.name
+        }
+      });
+    }
 
     if (dress) {
       const dressChanges: string[] = [];
 
-      // 1. Update telegramMsgId if missing
+      // 1. Bind unique telegramMsgId if missing
       if (!dress.telegramMsgId) {
         await prisma.dress.update({ where: { id: dress.id }, data: { telegramMsgId: tm.id } });
       }

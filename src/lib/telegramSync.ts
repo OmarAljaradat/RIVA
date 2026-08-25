@@ -137,20 +137,26 @@ export async function performTelegramSync() {
 
     const validColors = Array.from(new Set(parsed.variants.map(v => v.color.trim())));
 
-    // Find dress strictly by unique telegramMsgId OR by exact name match
-    const dress = await prisma.dress.findFirst({
+    // Find dress strictly by unique telegramMsgId OR unassigned dress by name
+    let dress = await prisma.dress.findFirst({
       where: {
-        OR: [
-          { telegramMsgId: tm.id },
-          { name: parsed.name }
-        ]
+        telegramMsgId: tm.id
       }
     });
+
+    if (!dress) {
+      dress = await prisma.dress.findFirst({
+        where: {
+          telegramMsgId: null,
+          name: parsed.name
+        }
+      });
+    }
 
     if (dress) {
       const dressChanges: string[] = [];
 
-      // 1. Update telegramMsgId if missing
+      // 1. Bind unique telegramMsgId if missing
       if (!dress.telegramMsgId) {
         await prisma.dress.update({
           where: { id: dress.id },
