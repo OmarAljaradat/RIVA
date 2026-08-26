@@ -11,12 +11,10 @@ const apiHash = process.env.TELEGRAM_API_HASH         || '';
 
 const syncBotToken =
   process.env.TELEGRAM_SYNC_BOT_TOKEN ||
-  process.env.TELEGRAM_BOT_TOKEN ||
   '8584452230:AAGRdOL8RDhZZQQPzd55VzLJwYIVnHxMiUY';
 
 const syncChatId =
   process.env.TELEGRAM_SYNC_CHAT_ID ||
-  process.env.TELEGRAM_ADMIN_CHAT_ID ||
   '1965859902';
 
 function escapeHtml(text: string): string {

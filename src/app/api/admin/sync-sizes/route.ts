@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'غير مصرح - يرجى تسجيل الدخول أو إرفاق كلمة المرور' }, { status: 401 });
   }
   try {
-    const result = await performTelegramSync();
+    const result = await performTelegramSync(true);
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'غير مصرح - يرجى تسجيل الدخول أو إرفاق كلمة المرور' }, { status: 401 });
   }
   try {
-    const result = await performTelegramSync();
+    const result = await performTelegramSync(true);
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
