@@ -117,19 +117,58 @@ interface NewDressDetail {
   colorsMap: Record<string, string[]>;
 }
 
-function isQuietHours(): boolean {
-  if (process.env.FORCE_SYNC === 'true') return false;
+function shouldRunSync(): { shouldRun: boolean; reason: string } {
+  if (process.env.FORCE_SYNC === 'true') {
+    return { shouldRun: true, reason: 'تشغيل إجباري (Force Sync)' };
+  }
+
   const now = new Date();
   const jorHour = Number(
     now.toLocaleString('en-US', { timeZone: 'Asia/Amman', hour: 'numeric', hour12: false })
   );
-  // Quiet hours: 1:00 AM to 9:59 AM Jordan Time
-  return jorHour >= 1 && jorHour < 10;
+  const jorMin = Number(
+    now.toLocaleString('en-US', { timeZone: 'Asia/Amman', minute: 'numeric' })
+  );
+
+  // 1. فحص فترة الهدوء الليلي (1:00 ص إلى 10:00 ص بتوقيت الأردن)
+  if (jorHour >= 1 && jorHour < 10) {
+    return {
+      shouldRun: false,
+      reason: `🌙 فترة الهدوء الليلي (${jorHour}:${jorMin < 10 ? '0' + jorMin : jorMin} بتوقيت الأردن) — المزامنة متوقفة حتى 10:00 ص.`
+    };
+  }
+
+  // 2. فحص فترة الذروة (3:00 م إلى 6:00 م بتوقيت الأردن: الساعات 15, 16, 17, 18)
+  const isPeakHours = (jorHour >= 15 && jorHour < 18) || (jorHour === 18 && jorMin <= 5);
+  if (isPeakHours) {
+    // في وقت الذروة: تشغيل كل 15 دقيقة
+    return {
+      shouldRun: true,
+      reason: `🔥 فترة الذروة (${jorHour}:${jorMin < 10 ? '0' + jorMin : jorMin} بتوقيت الأردن) — مزامنة سريعة كل 15 دقيقة.`
+    };
+  }
+
+  // 3. الفترة العادية (10:00 ص إلى 3:00 م، و 6:00 م إلى 1:00 ص)
+  // تشغيل كل 30 دقيقة (عند الدقائق القريبة من 00 أو 30)
+  const isHalfHourMark = (jorMin >= 0 && jorMin <= 8) || (jorMin >= 25 && jorMin <= 38) || (jorMin >= 55);
+  if (isHalfHourMark) {
+    return {
+      shouldRun: true,
+      reason: `🟢 الفترة العادية (${jorHour}:${jorMin < 10 ? '0' + jorMin : jorMin} بتوقيت الأردن) — مزامنة دورية كل 30 دقيقة.`
+    };
+  } else {
+    return {
+      shouldRun: false,
+      reason: `⏳ الفترة العادية (${jorHour}:${jorMin < 10 ? '0' + jorMin : jorMin} بتوقيت الأردن) — تخطي هذه الدورة لأن المزامنة العادية كل 30 دقيقة.`
+    };
+  }
 }
 
 async function main() {
-  if (isQuietHours()) {
-    console.log('🌙 فترة الهدوء الليلي (من 1:00 ص إلى 10:00 ص بتوقيت الأردن) — تم إيقاف المزامنة التلقائية.');
+  const check = shouldRunSync();
+  console.log(`⏱️ حالة الجدولة: ${check.reason}`);
+
+  if (!check.shouldRun) {
     await prisma.$disconnect();
     process.exit(0);
   }
