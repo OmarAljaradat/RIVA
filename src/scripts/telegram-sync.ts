@@ -128,7 +128,7 @@ function shouldRunSync(): { shouldRun: boolean; reason: string } {
     now.toLocaleString('en-US', { timeZone: 'Asia/Amman', minute: 'numeric' })
   );
 
-  // 1. فحص فترة الهدوء الليلي (1:00 ص إلى 10:00 ص بتوقيت الأردن)
+  // 1. فحص فترة الهدوء الليلي (1:00 ص إلى 10:00 ص بتوقيت الأردن: الساعات 1, 2, 3, 4, 5, 6, 7, 8, 9)
   if (jorHour >= 1 && jorHour < 10) {
     return {
       shouldRun: false,
@@ -136,30 +136,13 @@ function shouldRunSync(): { shouldRun: boolean; reason: string } {
     };
   }
 
-  // 2. فحص فترة الذروة (3:00 م إلى 6:00 م بتوقيت الأردن: الساعات 15, 16, 17, 18)
-  const isPeakHours = (jorHour >= 15 && jorHour < 18) || (jorHour === 18 && jorMin <= 5);
-  if (isPeakHours) {
-    // في وقت الذروة: تشغيل كل 15 دقيقة
-    return {
-      shouldRun: true,
-      reason: `🔥 فترة الذروة (${jorHour}:${jorMin < 10 ? '0' + jorMin : jorMin} بتوقيت الأردن) — مزامنة سريعة كل 15 دقيقة.`
-    };
-  }
-
-  // 3. الفترة العادية (10:00 ص إلى 3:00 م، و 6:00 م إلى 1:00 ص)
-  // تشغيل كل 30 دقيقة (عند الدقائق القريبة من 00 أو 30)
-  const isHalfHourMark = (jorMin >= 0 && jorMin <= 8) || (jorMin >= 25 && jorMin <= 38) || (jorMin >= 55);
-  if (isHalfHourMark) {
-    return {
-      shouldRun: true,
-      reason: `🟢 الفترة العادية (${jorHour}:${jorMin < 10 ? '0' + jorMin : jorMin} بتوقيت الأردن) — مزامنة دورية كل 30 دقيقة.`
-    };
-  } else {
-    return {
-      shouldRun: false,
-      reason: `⏳ الفترة العادية (${jorHour}:${jorMin < 10 ? '0' + jorMin : jorMin} بتوقيت الأردن) — تخطي هذه الدورة لأن المزامنة العادية كل 30 دقيقة.`
-    };
-  }
+  // 2. ساعات العمل والنشاط والذروة (من 10:00 ص إلى 1:00 ليلاً)
+  const isPeakHours = jorHour >= 15 && jorHour < 18;
+  const label = isPeakHours ? '🔥 فترة الذروة المسائية' : '🟢 ساعات العمل والنشاط';
+  return {
+    shouldRun: true,
+    reason: `${label} (${jorHour}:${jorMin < 10 ? '0' + jorMin : jorMin} بتوقيت الأردن) — جاري المزامنة بنجاح.`
+  };
 }
 
 async function main() {
