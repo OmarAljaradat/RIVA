@@ -117,7 +117,23 @@ interface NewDressDetail {
   colorsMap: Record<string, string[]>;
 }
 
+function isQuietHours(): boolean {
+  if (process.env.FORCE_SYNC === 'true') return false;
+  const now = new Date();
+  const jorHour = Number(
+    now.toLocaleString('en-US', { timeZone: 'Asia/Amman', hour: 'numeric', hour12: false })
+  );
+  // Quiet hours: 1:00 AM to 9:59 AM Jordan Time
+  return jorHour >= 1 && jorHour < 10;
+}
+
 async function main() {
+  if (isQuietHours()) {
+    console.log('🌙 فترة الهدوء الليلي (من 1:00 ص إلى 10:00 ص بتوقيت الأردن) — تم إيقاف المزامنة التلقائية.');
+    await prisma.$disconnect();
+    process.exit(0);
+  }
+
   if (!session || !apiId || !apiHash) {
     console.error('❌ متغيرات البيئة ناقصة: TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_USER_SESSION');
     process.exit(1);

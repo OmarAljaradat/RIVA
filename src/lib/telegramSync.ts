@@ -83,7 +83,24 @@ interface NewDressDetail {
   colorsMap: Record<string, string[]>;
 }
 
+function isQuietHours(): boolean {
+  if (process.env.FORCE_SYNC === 'true') return false;
+  const now = new Date();
+  const jorHour = Number(
+    now.toLocaleString('en-US', { timeZone: 'Asia/Amman', hour: 'numeric', hour12: false })
+  );
+  return jorHour >= 1 && jorHour < 10;
+}
+
 export async function performTelegramSync() {
+  if (isQuietHours()) {
+    return {
+      success: true,
+      skipped: true,
+      reason: 'فترة الهدوء الليلي (من 1:00 ص إلى 10:00 ص بتوقيت الأردن) — تم تخطي المزامنة.'
+    };
+  }
+
   let stringSession = process.env.TELEGRAM_USER_SESSION || '';
   if (!stringSession) {
     const sessionFile = path.join(process.cwd(), 'prisma', 'telegram_user.session');
