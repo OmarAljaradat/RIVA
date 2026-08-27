@@ -1,8 +1,2 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/sync-telegram?key=riva_cron_sync_2024_secure_key",
-      "schedule": "*/15 * * * *"
-    }
-  ]
-}
+{}
+

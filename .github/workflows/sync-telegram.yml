@@ -1,10 +1,8 @@
-name: 🔄 Telegram Auto Sync
+name: 🔄 Telegram Manual Sync
 
 on:
-  schedule:
-    # يعمل كل 15 دقيقة بانتظام، ويتكفل السكربت بتحديد فترات الذروة والعادية والهدوء
-    - cron: '*/15 * * * *'
-  # تشغيل يدوي عند الحاجة من GitHub
+  # تم إيقاف الجدولة التلقائية هنا لأنها أصبحت تعمل عبر cron-job.org السحابي الموثوق
+  # يمكن تشغيلها يدوياً عند الحاجة فقط من تبويب Actions في GitHub
   workflow_dispatch:
 
 jobs:
