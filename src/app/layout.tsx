@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     },
   },
   verification: {
-    google: '2m9hSJAekyGkkmiXe5FNOsMnVEr5N48mIZ4',
+    google: 'd21ZObF424f4JekBOqTDxSqV4VCL6joskyqzjGXSYF4',
   },
 };
 
@@ -100,7 +100,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
-        <meta name="google-site-verification" content="2m9hSJAekyGkkmiXe5FNOsMnVEr5N48mIZ4" />
+        <meta name="google-site-verification" content="d21ZObF424f4JekBOqTDxSqV4VCL6joskyqzjGXSYF4" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dawod/thmanyah-font-web/index.css" />
         <script
           type="application/ld+json"
