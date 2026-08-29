@@ -60,6 +60,9 @@ export const metadata: Metadata = {
       'max-snippet': -1,
     },
   },
+  verification: {
+    google: '2m9hSJAekyGkkmiXe5FNOsMnVEr5N48mIZ4',
+  },
 };
 
 const jsonLd = {
@@ -97,6 +100,7 @@ export default function RootLayout({
   return (
     <html lang="ar" dir="rtl">
       <head>
+        <meta name="google-site-verification" content="2m9hSJAekyGkkmiXe5FNOsMnVEr5N48mIZ4" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dawod/thmanyah-font-web/index.css" />
         <script
           type="application/ld+json"
