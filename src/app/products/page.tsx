@@ -35,8 +35,26 @@ export default function ProductsPage() {
     });
   }, [products, selectedSize]);
 
+  const itemListJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'كتالوج فساتين ريفا الملكية | RIVA Collection',
+    description: 'تشكيلة فساتين سهرة ومناسبات راقية في الأردن من بوتيك ريفا',
+    numberOfItems: products.length,
+    itemListElement: products.slice(0, 35).map((dress, idx) => ({
+      '@type': 'ListItem',
+      position: idx + 1,
+      name: dress.name,
+      url: `https://riva-lime.vercel.app/products/${dress.id}`,
+    })),
+  };
+
   return (
     <main style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListJsonLd) }}
+      />
       <Navbar />
 
       {/* Luxury Catalog Header */}

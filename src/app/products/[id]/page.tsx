@@ -191,8 +191,43 @@ export default function ProductDetailPage() {
     router.push(`/checkout?dressId=${dress.id}&variantId=${effectiveVariantId}`);
   };
 
+  const allDressImages = colorGroups.flatMap(g => g.images).filter(url => !url.endsWith('.mp4'));
+  const isAvailable = colorGroups.some(g => !g.isSoldOut);
+
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: dress.name,
+    description: cleanDressDescription || `${dress.name} من بوتيك ريفا للأزياء الراقية في الأردن`,
+    image: allDressImages.length > 0 ? allDressImages : ['https://riva-lime.vercel.app/logo.png'],
+    sku: `RIVA-${dress.id}`,
+    brand: {
+      '@type': 'Brand',
+      name: 'RIVA Boutique',
+    },
+    offers: {
+      '@type': 'Offer',
+      url: `https://riva-lime.vercel.app/products/${dress.id}`,
+      priceCurrency: 'JOD',
+      price: dress.price,
+      priceValidUntil: '2027-12-31',
+      itemCondition: 'https://schema.org/NewCondition',
+      availability: isAvailable
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      seller: {
+        '@type': 'Organization',
+        name: 'بوتيك ريفا | RIVA Boutique',
+      },
+    },
+  };
+
   return (
     <main style={{ minHeight: '100vh', background: 'var(--color-cream)' }}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
       <Navbar />
 
       {/* Breadcrumb */}
