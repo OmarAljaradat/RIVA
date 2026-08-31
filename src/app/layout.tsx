@@ -101,7 +101,6 @@ export default function RootLayout({
     <html lang="ar" dir="rtl">
       <head>
         <meta name="google-site-verification" content="d21ZObF424f4JekBOqTDxSqV4VCL6joskyqzjGXSYF4" />
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@dawod/thmanyah-font-web/index.css" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
