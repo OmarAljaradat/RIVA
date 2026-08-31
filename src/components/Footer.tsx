@@ -1,6 +1,14 @@
 'use client';
 
 export default function Footer() {
+  const trackSocial = (platform: string) => {
+    fetch('/api/events/checkout-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'social_click', platform, pageTitle: 'أسفل الصفحة (Footer)' }),
+    }).catch(() => {});
+  };
+
   return (
     <footer style={{
       background: '#0D0E12',
@@ -36,6 +44,7 @@ export default function Footer() {
             href="https://www.instagram.com/riva.dress1/"
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => trackSocial('instagram')}
             style={{
               background: 'linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)',
               padding: '8px 20px',

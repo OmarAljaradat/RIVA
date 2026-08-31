@@ -7,6 +7,14 @@ import InstagramTopBar from './InstagramTopBar';
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const trackSocial = (platform: string) => {
+    fetch('/api/events/checkout-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'social_click', platform, pageTitle: 'القائمة العلوية (Navbar)' }),
+    }).catch(() => {});
+  };
+
   return (
     <>
       <InstagramTopBar />
@@ -26,7 +34,13 @@ export default function Navbar() {
             <nav className="nav-links-desktop">
               <Link href="/" className="nav-link-item active">الرئيسية</Link>
               <Link href="/products" className="nav-link-item">الفساتين</Link>
-              <a href="https://www.instagram.com/riva.dress1/" target="_blank" rel="noopener noreferrer" className="nav-link-item">
+              <a 
+                href="https://www.instagram.com/riva.dress1/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="nav-link-item"
+                onClick={() => trackSocial('instagram')}
+              >
                 إنستغرام
               </a>
               <a 
@@ -34,6 +48,7 @@ export default function Navbar() {
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="nav-link-item"
+                onClick={() => trackSocial('instagram_dm')}
               >
                 تواصل معنا 💬
               </a>

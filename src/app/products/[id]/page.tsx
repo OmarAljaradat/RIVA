@@ -185,6 +185,38 @@ export default function ProductDetailPage() {
   const selectedSizeInfo = selectedColor?.sizes.find(s => s.variantId === effectiveVariantId);
   const colorIsSoldOut = selectedColor?.isSoldOut || (selectedSizeInfo && selectedSizeInfo.quantity <= 0);
 
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!dress?.id) return;
+    const timer = setTimeout(() => {
+      fetch('/api/events/checkout-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'engaged_view', dressId: dress.id }),
+      }).catch(() => {});
+    }, 15000);
+
+    return () => clearTimeout(timer);
+  }, [dress?.id]);
+
+  const handleShare = () => {
+    if (!dress) return;
+    try {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(window.location.href);
+      }
+    } catch {}
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+
+    fetch('/api/events/checkout-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: 'share_dress', dressId: dress.id }),
+    }).catch(() => {});
+  };
+
   const handleDirectOrder = () => {
     if (colorIsSoldOut) return;
     if (!effectiveVariantId) { alert('يرجى اختيار المقاس أولاً'); return; }
@@ -266,8 +298,32 @@ export default function ProductDetailPage() {
                 </h1>
               </div>
 
-              <div style={{ fontSize: 'clamp(24px, 5vw, 32px)', fontWeight: 900, color: 'var(--color-burgundy)', whiteSpace: 'nowrap' }}>
-                {dress.price} <span style={{ fontSize: '14px', color: '#6B7280', fontWeight: 700 }}>د.أ</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  title="مشاركة الفستان"
+                  style={{
+                    background: copied ? '#ECFDF5' : '#F9FAFB',
+                    border: '1px solid ' + (copied ? '#10B981' : '#E5E7EB'),
+                    color: copied ? '#059669' : '#374151',
+                    padding: '7px 12px',
+                    borderRadius: '12px',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <span>{copied ? '✅ تم النسخ' : '🔗 مشاركة'}</span>
+                </button>
+
+                <div style={{ fontSize: 'clamp(24px, 5vw, 32px)', fontWeight: 900, color: 'var(--color-burgundy)', whiteSpace: 'nowrap' }}>
+                  {dress.price} <span style={{ fontSize: '14px', color: '#6B7280', fontWeight: 700 }}>د.أ</span>
+                </div>
               </div>
             </div>
           </div>
