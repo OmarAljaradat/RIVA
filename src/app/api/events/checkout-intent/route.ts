@@ -1,4 +1,4 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
@@ -12,8 +12,15 @@ function escapeHtml(str: string) {
 }
 
 async function sendTelegram(text: string) {
-  const token = process.env.TELEGRAM_BOT_TOKEN || '8647389861:AAG4JGyAQYu4FD6IcX1NVa3wV6HACaoQo0U';
-  const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID || '1965859902';
+  const token =
+    process.env.TELEGRAM_ACTIVITY_BOT_TOKEN ||
+    process.env.TELEGRAM_SYNC_BOT_TOKEN ||
+    '8584452230:AAGRdOL8RDhZZQQPzd55VzLJwYIVnHxMiUY';
+
+  const chatId =
+    process.env.TELEGRAM_ACTIVITY_CHAT_ID ||
+    process.env.TELEGRAM_SYNC_CHAT_ID ||
+    '1965859902';
 
   if (!token || !chatId) return;
 
