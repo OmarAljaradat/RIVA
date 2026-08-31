@@ -46,6 +46,8 @@ export async function GET(request: NextRequest) {
         });
       }
     });
+
+    return NextResponse.json(products);
   } catch (err: any) {
     console.error('Products API Error:', err);
     return NextResponse.json({ error: 'حدث خطأ في جلب المنتجات', detail: err?.message || String(err) }, { status: 500 });
