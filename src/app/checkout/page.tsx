@@ -76,6 +76,18 @@ function CheckoutContent() {
   const [agreedToNoInspection, setAgreedToNoInspection] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSentLead, setHasSentLead] = useState(false);
+
+  const handlePhoneBlur = () => {
+    if (!hasSentLead && formData.phone && formData.phone.trim().length >= 9) {
+      setHasSentLead(true);
+      fetch('/api/events/checkout-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'lead_typed', dressId, variantId, formData }),
+      }).catch(() => {});
+    }
+  };
 
   useEffect(() => {
     // Clear any previous mock/cached customer data so the form is always 100% fresh and blank
@@ -91,7 +103,16 @@ function CheckoutContent() {
 
     if (!dressId || !variantId) { router.push('/products'); return; }
     fetch(`/api/products/${dressId}`)
-      .then(r => r.json()).then(setDress)
+      .then(r => r.json())
+      .then(data => {
+        setDress(data);
+        // Send instant Telegram alert that a customer entered checkout
+        fetch('/api/events/checkout-intent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: 'view_checkout', dressId, variantId }),
+        }).catch(() => {});
+      })
       .catch(() => router.push('/products'))
       .finally(() => setLoading(false));
   }, [dressId, variantId, router]);
@@ -272,6 +293,7 @@ function CheckoutContent() {
                   autoComplete="off"
                   value={formData.phone}
                   onChange={e => set('phone', e.target.value)}
+                  onBlur={handlePhoneBlur}
                   placeholder="07XXXXXXXX" dir="ltr" />
               </Field>
             </div>
