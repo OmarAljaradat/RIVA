@@ -10,7 +10,7 @@ export const maxDuration = 60;
 
 const apiId = 34081063;
 const apiHash = '018dc673429227e26a1b8d9d65eb76ca';
-const BOT_TOKEN = '8647389861:AAG4JGyAQYu4FD6IcX1NVa3wV6HACaoQo0U';
+const BOT_TOKEN = '8647968101:AAFVO3ukMsC32RvbIA18OLAwl83wACWV_-4';
 
 export async function POST(
   request: NextRequest,

@@ -9,7 +9,7 @@ function escapeHtml(str: string) {
 }
 
 export async function sendTelegramOrderNotification(order: any) {
-  const token = process.env.TELEGRAM_BOT_TOKEN || '8647389861:AAG4JGyAQYu4FD6IcX1NVa3wV6HACaoQo0U';
+  const token = process.env.TELEGRAM_BOT_TOKEN || '8647968101:AAFVO3ukMsC32RvbIA18OLAwl83wACWV_-4';
   const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID || '1965859902';
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.SITE_URL || 'https://riva-lime.vercel.app';
 
