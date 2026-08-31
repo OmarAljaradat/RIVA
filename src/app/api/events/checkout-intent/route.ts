@@ -13,13 +13,13 @@ function escapeHtml(str: string) {
 
 async function sendTelegram(text: string) {
   const token =
-    process.env.TELEGRAM_ACTIVITY_BOT_TOKEN ||
-    process.env.TELEGRAM_SYNC_BOT_TOKEN ||
-    '8584452230:AAGRdOL8RDhZZQQPzd55VzLJwYIVnHxMiUY';
+    process.env.TELEGRAM_TRACKING_BOT_TOKEN ||
+    process.env.TELEGRAM_RADAR_BOT_TOKEN ||
+    '8743461604:AAGpFwPg5u8YAOeqKl4_W7UJXPVVwCdaIp8';
 
   const chatId =
-    process.env.TELEGRAM_ACTIVITY_CHAT_ID ||
-    process.env.TELEGRAM_SYNC_CHAT_ID ||
+    process.env.TELEGRAM_TRACKING_CHAT_ID ||
+    process.env.TELEGRAM_RADAR_CHAT_ID ||
     '1965859902';
 
   if (!token || !chatId) return;
