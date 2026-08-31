@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['@prisma/adapter-pg', 'pg', 'telegram'],
   // ─── Security Headers ────────────────────────────────────────────────────
   async headers() {
     return [
