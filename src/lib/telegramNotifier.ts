@@ -107,25 +107,24 @@ ${itemsListForWa}`;
     }
     const customerWhatsAppUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(copyableMessage)}` : '';
 
-    // 5. Build inline keyboard (Direct Customer WA + Group WA + Instagram + Admin Panel)
+    // 5. Build inline keyboard (Instagram Confirmation + Delivery Group WA + Admin Panel)
     const inlineKeyboard: any[] = [];
 
-    // Row 1: Direct Customer Actions
-    const firstRow: any[] = [];
-    if (customerWhatsAppUrl) {
-      firstRow.push({
-        text: '💬 تأكيد الطلب مع الزبونة (واتساب)',
-        url: customerWhatsAppUrl,
-      });
-    }
+    // Row 1: Primary Confirmation on Customer Instagram
     if (cleanInsta) {
-      firstRow.push({
-        text: `📸 إنستقرام (@${cleanInsta})`,
-        url: `https://ig.me/m/${cleanInsta}`,
-      });
-    }
-    if (firstRow.length > 0) {
-      inlineKeyboard.push(firstRow);
+      inlineKeyboard.push([
+        {
+          text: `💬 تأكيد الطلب على إنستقرام الزبونة (@${cleanInsta})`,
+          url: `https://ig.me/m/${cleanInsta}`,
+        },
+      ]);
+    } else if (customerWhatsAppUrl) {
+      inlineKeyboard.push([
+        {
+          text: '💬 تأكيد الطلب مع الزبونة (واتساب)',
+          url: customerWhatsAppUrl,
+        },
+      ]);
     }
 
     // Row 2: Delivery Team Group + Admin Panel
