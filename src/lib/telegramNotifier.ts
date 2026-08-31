@@ -98,29 +98,47 @@ ${itemsListForWa}`;
 
     const directWhatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(whatsAppText)}`;
 
-    // 5. Build inline keyboard (Direct WhatsApp + Instagram + Admin Panel)
+    // Format clean phone for direct WhatsApp
+    let cleanPhone = (order.phone || '').replace(/[^0-9]/g, '');
+    if (cleanPhone.startsWith('07')) {
+      cleanPhone = '962' + cleanPhone.substring(1);
+    } else if (cleanPhone.startsWith('7') && cleanPhone.length === 9) {
+      cleanPhone = '962' + cleanPhone;
+    }
+    const customerWhatsAppUrl = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(copyableMessage)}` : '';
+
+    // 5. Build inline keyboard (Direct Customer WA + Group WA + Instagram + Admin Panel)
     const inlineKeyboard: any[] = [];
 
-    // Row 1: Instant Direct WhatsApp Button
-    inlineKeyboard.push([
-      {
-        text: '📲 إرسال لقروب واتساب الطلبات',
-        url: directWhatsAppUrl
-      }
-    ]);
-
-    // Row 2: Instagram + Admin Panel
-    const secondRow: any[] = [];
-    if (cleanInsta) {
-      secondRow.push({
-        text: `💬 مراسلة إنستقرام (@${cleanInsta})`,
-        url: `https://ig.me/m/${cleanInsta}`
+    // Row 1: Direct Customer Actions
+    const firstRow: any[] = [];
+    if (customerWhatsAppUrl) {
+      firstRow.push({
+        text: '💬 تأكيد الطلب مع الزبونة (واتساب)',
+        url: customerWhatsAppUrl,
       });
     }
-    secondRow.push({
-      text: '📦 لوحة الطلبات',
-      url: buttonUrl
-    });
+    if (cleanInsta) {
+      firstRow.push({
+        text: `📸 إنستقرام (@${cleanInsta})`,
+        url: `https://ig.me/m/${cleanInsta}`,
+      });
+    }
+    if (firstRow.length > 0) {
+      inlineKeyboard.push(firstRow);
+    }
+
+    // Row 2: Delivery Team Group + Admin Panel
+    const secondRow: any[] = [
+      {
+        text: '📲 إرسال لجروب تثبيت الطلبات',
+        url: directWhatsAppUrl,
+      },
+      {
+        text: '📦 لوحة التحكم',
+        url: buttonUrl,
+      },
+    ];
     inlineKeyboard.push(secondRow);
 
     const payload = {
