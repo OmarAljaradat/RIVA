@@ -5,7 +5,6 @@ import { isAdminAuthenticated } from '@/lib/adminAuth';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// ─── GET: عام — يُستخدم من صفحة المتجر ─────────────────────────────────
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -16,41 +15,22 @@ export async function GET(request: NextRequest) {
     if (searchParams.has('featured')) where.isFeatured = featured;
     if (searchParams.has('new')) where.isNew = isNew;
 
-    let products = [];
-    try {
-      products = await prisma.dress.findMany({
-        where,
-        include: {
-          variants: { include: { images: true } },
+    const products = await prisma.dress.findMany({
+      where,
+      include: {
+        variants: {
+          include: {
+            images: true,
+          },
         },
-        orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
-      });
-    } catch {
-      products = await prisma.dress.findMany({
-        where,
-        include: {
-          variants: { include: { images: true } },
-        },
-        orderBy: { createdAt: 'desc' },
-      });
-    }
-
-    // ترتيب المقاسات تصاعدياً
-    products.forEach((p: any) => {
-      if (Array.isArray(p.variants)) {
-        p.variants.sort((a: any, b: any) => {
-          const numA = parseInt(a.size.replace(/\D/g, ''), 10);
-          const numB = parseInt(b.size.replace(/\D/g, ''), 10);
-          if (!isNaN(numA) && !isNaN(numB)) return numA - numB;
-          return a.size.localeCompare(b.size);
-        });
-      }
+      },
+      orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json(products);
+    return NextResponse.json(products || []);
   } catch (err: any) {
     console.error('Products API Error:', err);
-    return NextResponse.json({ error: 'حدث خطأ في جلب المنتجات', detail: err?.message || String(err) }, { status: 500 });
+    return NextResponse.json({ error: 'حدث خطأ في جلب المنتجات', detail: String(err?.message || err) }, { status: 500 });
   }
 }
 
